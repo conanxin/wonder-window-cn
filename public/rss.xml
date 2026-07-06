@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>万物小窗</title>
+    <link>https://wonder-window-cn.vercel.app</link>
+    <description>《万物小窗》是一份写给好奇心、注意力和内在生活的中文周刊。每周打开一扇通往惊奇、自然、思想与生活智慧的窗。</description>
+    <language>zh-CN</language>
+    <lastBuildDate>Mon, 06 Jul 2026 09:27:18 GMT</lastBuildDate>
+    <item>
+      <title>#003 把日常变成仪式</title>
+      <link>https://wonder-window-cn.vercel.app/issues/003-rituals-of-everyday-life</link>
+      <guid isPermaLink="true">https://wonder-window-cn.vercel.app/issues/003-rituals-of-everyday-life</guid>
+      <description>这一期写给那些被重复磨平的日子：泡茶、开窗、走路、关灯，都可以成为把自己重新带回现场的方法。</description>
+      <pubDate>Sun, 05 Jul 2026 00:00:00 GMT</pubDate>
+      <author>Conan Xin</author>
+    </item>
+    <item>
+      <title>#002 学会迷路</title>
+      <link>https://wonder-window-cn.vercel.app/issues/002-learn-to-wander</link>
+      <guid isPermaLink="true">https://wonder-window-cn.vercel.app/issues/002-learn-to-wander</guid>
+      <description>这一期关于城市漫游、路线之外的知识，以及在高度导航化的生活里，重新允许自己不知道下一步。</description>
+      <pubDate>Sun, 28 Jun 2026 00:00:00 GMT</pubDate>
+      <author>Conan Xin</author>
+    </item>
+    <item>
+      <title>#001 重新看见世界</title>
+      <link>https://wonder-window-cn.vercel.app/issues/001-see-the-world-again</link>
+      <guid isPermaLink="true">https://wonder-window-cn.vercel.app/issues/001-see-the-world-again</guid>
+      <description>创刊号从注意力开始：如何从信息流的雾里退一步，让眼睛、耳朵和心重新对世界变得敏感。</description>
+      <pubDate>Sun, 21 Jun 2026 00:00:00 GMT</pubDate>
+      <author>Conan Xin</author>
+    </item>
+  </channel>
+</rss>

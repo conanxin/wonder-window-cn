@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://wonder-window-cn.vercel.app/sitemap.xml
