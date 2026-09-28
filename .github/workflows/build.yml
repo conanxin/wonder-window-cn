@@ -24,6 +24,8 @@ jobs:
         run: npm run rehearse:ready
       - name: Test release rehearsal guards
         run: npm run test:release-rehearsal
+      - name: Test release decision manifest
+        run: npm run test:release-manifest
       - name: Build production and verify candidate exclusion
         run: npm run build
       - name: Prove Vercel production cannot be overridden by preview flag
