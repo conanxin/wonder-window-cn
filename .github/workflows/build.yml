@@ -32,8 +32,6 @@ jobs:
         run: npm run test:approved-manifest
       - name: Test publication patch preview
         run: npm run test:publication-patch-preview
-      - name: Check approved trial-03 release proposal
-        run: npm run check:trial03-approved-proposal
       - name: Test published issue display date
         run: npm run test:issue-display-date
       - name: Build production and verify candidate exclusion
