@@ -7,6 +7,7 @@ const approvedPath = `${dir}/approved.json`
 const stalePath = `${dir}/stale.json`
 const wrongUrlPath = `${dir}/wrong-url.json`
 const invalidApprovedAtPath = `${dir}/invalid-approved-at.json`
+const staleProposalPath = `${dir}/stale-proposal.json`
 
 await mkdir(dir, { recursive: true })
 
@@ -48,6 +49,7 @@ approved.decision.approvedProposal = {
   contentFingerprintSha256: approved.candidate.contentFingerprintSha256,
   publishedAt: approved.proposedPublication.publishedAt,
   canonicalUrl: approved.proposedPublication.canonicalUrl,
+  proposalFingerprintSha256: approved.proposalFingerprintSha256,
 }
 await writeFile(approvedPath, JSON.stringify(approved, null, 2))
 
@@ -93,8 +95,17 @@ if (runVerifier(invalidApprovedAtPath).status === 0) {
   throw new Error('Impossible approval timestamp must fail verification')
 }
 
+const staleProposal = structuredClone(approved)
+staleProposal.decision.approvedProposal.proposalFingerprintSha256 =
+  '0'.repeat(64)
+await writeFile(staleProposalPath, JSON.stringify(staleProposal, null, 2))
+
+if (runVerifier(staleProposalPath).status === 0) {
+  throw new Error('Stale approved proposal fingerprint must fail verification')
+}
+
 await rm(dir, { recursive: true, force: true })
 
 console.log(
-  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, and impossible approval timestamp rejected',
+  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, approval timestamp, and proposal fingerprint rejected',
 )
