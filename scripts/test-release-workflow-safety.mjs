@@ -17,8 +17,14 @@ if (!generateStep) {
 }
 
 const generateBlock = generateStep.split('      - name: Upload decision manifest')[0]
+const runMarker = '        run: |\n'
+const runBlock = generateBlock.split(runMarker)[1]
 
-if (generateBlock.includes('${{ inputs.')) {
+if (!runBlock) {
+  throw new Error('manifest generation shell block not found')
+}
+
+if (runBlock.includes('${{ inputs.')) {
   throw new Error('workflow dispatch expressions must not be interpolated into the run block')
 }
 
