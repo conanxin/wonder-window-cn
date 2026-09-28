@@ -1,0 +1,31 @@
+name: release-rehearsal
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: READY editorial candidate slug
+        required: true
+        type: string
+      published_at:
+        description: Projected publication date (YYYY-MM-DD)
+        required: true
+        type: string
+
+jobs:
+  rehearse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Rehearse release
+        run: npm run rehearse:release -- "${{ inputs.slug }}" "${{ inputs.published_at }}"
+      - name: Verify current Production build stays unchanged
+        run: npm run build
