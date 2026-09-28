@@ -65,6 +65,22 @@ rehearsal 会在内存中把 READY 候选投影为 PUBLISHED，并检查：
 
 CI 还执行 `npm run rehearse:ready`，持续验证所有 READY 候选仍能通过发布路径。GitHub Actions 的 `release-rehearsal` workflow 可以手动输入 slug 和日期做同样的非发布演练。
 
+### Publication Decision Manifest
+
+真正做发布决定之前，可以生成只读 JSON 决策包：
+
+    npm run release:manifest -- trial-03-utamaro-butterfly-dragonfly 2026-09-28
+
+或者写入临时文件：
+
+    npm run release:manifest -- trial-03-utamaro-butterfly-dragonfly 2026-09-28 --output release-manifest/trial-03.json
+
+manifest 会先调用同一 release rehearsal；只有 READY 候选通过后才输出。内容包括候选身份、拟定发布日期和公开 URL、RSS / sitemap 影响、来源、媒体权利状态、证据边界、registry 迁移计划，以及仍需外部核验的 Production URL / public route。
+
+manifest 是 **decision-only artifact**：不会修改 registry、不会把状态改成 PUBLISHED、不会发送 newsletter。
+
+GitHub Actions 的 `release-decision-manifest` workflow 可以手动生成该 JSON 并作为 artifact 下载审阅。
+
 
 ## 当前编辑候选
 
