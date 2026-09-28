@@ -36,28 +36,44 @@ async function collectFiles(dir) {
 const files = await collectFiles('dist')
 const contents = await Promise.all(files.map((file) => readFile(file, 'utf8')))
 const haystack = contents.join('\n')
-const markers = editorialCandidates.flatMap((issue) => [
-  issue.id,
-  issue.slug,
-  issue.title,
-])
 
-const found = markers.filter((marker) => haystack.includes(marker))
+const candidateChecks = editorialCandidates.map((issue) => {
+  const markers = [issue.id, issue.slug, issue.title]
+  const found = markers.filter((marker) => haystack.includes(marker))
+
+  return {
+    issue,
+    markers,
+    found,
+    missing: markers.filter((marker) => !found.includes(marker)),
+  }
+})
+
+const allFound = candidateChecks.flatMap(({ found }) => found)
 
 if (previewEnabled) {
-  if (found.length === 0) {
+  const incomplete = candidateChecks.filter(({ missing }) => missing.length > 0)
+
+  if (incomplete.length > 0) {
+    const details = incomplete
+      .map(
+        ({ issue, missing }) =>
+          `${issue.slug}: missing preview markers [${missing.join(', ')}]`,
+      )
+      .join('; ')
+
     throw new Error(
-      'Editorial preview bundle check failed: preview build does not contain any candidate marker',
+      `Editorial preview bundle check failed: every candidate must be present. ${details}`,
     )
   }
 
   console.log(
-    `Editorial preview bundle OK: candidate content present for preview review (${found.length} markers found)`,
+    `Editorial preview bundle OK: all ${editorialCandidates.length} candidates present (${allFound.length} markers found)`,
   )
 } else {
-  if (found.length > 0) {
+  if (allFound.length > 0) {
     throw new Error(
-      `Production publication-surface isolation failed: unpublished candidate markers found: ${found.join(', ')}`,
+      `Production publication-surface isolation failed: unpublished candidate markers found: ${allFound.join(', ')}`,
     )
   }
 
