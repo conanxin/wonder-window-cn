@@ -61,6 +61,17 @@ assertEqual(
   'invalid publishedAt falls back to date',
 )
 
+assertEqual(
+  getIssueDisplayDate({
+    schemaVersion: 2,
+    publicationStatus: 'PUBLISHED',
+    date: '备用日期',
+    publishedAt: '2026-02-31',
+  }),
+  '备用日期',
+  'impossible calendar date falls back to date',
+)
+
 console.log(
   'Issue display date contract PASS: READY uses editorial date; PUBLISHED v2 uses exact publishedAt; legacy behavior preserved',
 )
