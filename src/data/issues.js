@@ -176,9 +176,9 @@ export const allIssues = [
   })),
 ]
 
-export const issues = allIssues.filter(
-  (issue) => issue.publicationStatus === 'PUBLISHED',
-)
+export const issues = allIssues
+  .filter((issue) => issue.publicationStatus === 'PUBLISHED')
+  .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
 
 export const issueTags = ['全部', ...new Set(issues.flatMap((issue) => issue.tags || []))]
 
