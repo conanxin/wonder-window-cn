@@ -28,6 +28,8 @@ jobs:
         run: npm run test:release-manifest
       - name: Test release workflow input safety
         run: npm run test:release-workflow-safety
+      - name: Test approved manifest verification
+        run: npm run test:approved-manifest
       - name: Build production and verify candidate exclusion
         run: npm run build
       - name: Prove Vercel production cannot be overridden by preview flag
