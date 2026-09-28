@@ -10,6 +10,11 @@ export function candidateFingerprint(candidate) {
   return hashJson(candidate)
 }
 
+export const UNRESOLVED_EXTERNAL_VERIFICATION = [
+  'Confirm the canonical Production site URL is the intended public domain before publication.',
+  'Confirm the final public issue route is remotely reachable after a real publication deployment.',
+]
+
 export function buildReviewSnapshot(candidate) {
   return {
     candidate: {
@@ -38,6 +43,7 @@ export function buildReviewSnapshot(candidate) {
       caption: item.caption || null,
     })),
     sources: candidate.sources || [],
+    unresolvedExternalVerification: UNRESOLVED_EXTERNAL_VERIFICATION,
   }
 }
 
