@@ -24,6 +24,10 @@ function requireString(value, label) {
 }
 
 function requireApprovedDecision(manifest) {
+  if (Object.prototype.hasOwnProperty.call(manifest, 'sourceContext')) {
+    fail('Approved manifest must not contain unverifiable sourceContext provenance')
+  }
+
   if (manifest.manifestVersion !== 1) {
     fail(`Unsupported manifestVersion: ${String(manifest.manifestVersion)}`)
   }
