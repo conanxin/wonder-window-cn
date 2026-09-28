@@ -12,6 +12,16 @@ export function candidateFingerprint(candidate) {
 
 export function buildReviewSnapshot(candidate) {
   return {
+    candidate: {
+      id: candidate.id,
+      slug: candidate.slug,
+      title: candidate.title,
+      currentStatus: candidate.publicationStatus,
+      schemaVersion: candidate.schemaVersion,
+      issueType: candidate.issueType,
+      issueTypeLabel: candidate.issueTypeLabel,
+      notionUrl: candidate.notionUrl || null,
+    },
     editorial: {
       coreQuestion: candidate.coreQuestion,
       editorialPoint: candidate.editorialPoint,
