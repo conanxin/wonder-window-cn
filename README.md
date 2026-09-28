@@ -43,11 +43,27 @@
 
 ### READY 候选发布前预检
 
-在把候选移动到 `publishedEditorialIssues.js` 之前，先执行：
+结构预检：
 
     npm run check:release -- trial-03-utamaro-butterfly-dragonfly
 
-该命令要求候选状态为 READY，并检查 v0.2 必需字段与 schemaVersion；它不会修改状态、不会发送邮件、也不会公开发布内容。
+完整 release rehearsal：
+
+    npm run rehearse:release -- trial-03-utamaro-butterfly-dragonfly 2026-09-28
+
+rehearsal 会在内存中把 READY 候选投影为 PUBLISHED，并检查：
+- schema / 必需字段；
+- id / slug 与现有公开 issue 的冲突；
+- publishedAt 格式与真实日历日期；
+- 公开 issue 的发布日期排序；
+- canonical issue URL；
+- RSS pubDate；
+- sitemap lastmod；
+- 从 candidate registry 迁移到 published registry 时必须完成的编辑动作。
+
+它不会修改源文件、不会改变 publicationStatus、不会发送邮件，也不会公开内容。
+
+CI 还执行 `npm run rehearse:ready`，持续验证所有 READY 候选仍能通过发布路径。GitHub Actions 的 `release-rehearsal` workflow 可以手动输入 slug 和日期做同样的非发布演练。
 
 
 ## 当前编辑候选
