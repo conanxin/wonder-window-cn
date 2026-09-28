@@ -2,7 +2,7 @@
 
 《万物小窗》是一份策展式中文通讯，也是一套面向书、图像、档案、地图、照片与声音的轻量数字出版系统。
 
-当前进入 **v0.2 Release Candidate Preview Gate**：架构已合并到 main，未发布候选与 Production bundle 分离；候选只在本地开发和 Vercel Preview 环境加载。
+当前进入 **P12｜Approved Manifest Verification Gate**：架构、Preview gate、release rehearsal 与 decision manifest 已进入 main；当前新增的是“批准后的 manifest 是否仍对应当前候选内容和发布提案”的只读验证层。验证通过也不会自动刊发。
 
 ## 当前架构
 
