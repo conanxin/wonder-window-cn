@@ -75,7 +75,7 @@ CI 还执行 `npm run rehearse:ready`，持续验证所有 READY 候选仍能通
 
     npm run release:manifest -- trial-03-utamaro-butterfly-dragonfly 2026-09-28 --output release-manifest/trial-03.json
 
-manifest 会先调用同一 release rehearsal；只有 READY 候选通过后才输出。内容包括候选身份、拟定发布日期和公开 URL、RSS / sitemap 影响、来源、媒体权利状态、证据边界、registry 迁移计划，以及仍需外部核验的 Production URL / public route。
+manifest 会先调用同一 release rehearsal；只有 READY 候选通过后才输出。内容包括候选身份、**候选正文 SHA-256 fingerprint**、拟定发布日期和公开 URL、RSS / sitemap 影响、来源、媒体权利状态、证据边界、registry 迁移计划，以及仍需外部核验的 Production URL / public route。决策字段默认保持 `requiresExplicitApproval=true` 与 `approvalStatus=PENDING`，用于防止把“生成决策包”误当成“已经批准发布”。
 
 manifest 是 **decision-only artifact**：不会修改 registry、不会把状态改成 PUBLISHED、不会发送 newsletter。
 
