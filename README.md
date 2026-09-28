@@ -14,6 +14,7 @@
 - v0.2 候选：保存在 src/data/editorialIssues.js
 - 开发预览：/editorial-preview/:slug，仅在 Vite DEV 模式注册
 - RSS / sitemap：继续只读取公开 issues 导出
+- 外部媒体：加载失败时保留显式 fallback 与原件出口，不生成替代内容冒充原件
 - 公网部署：当前未确认存在；src/siteConfig.js 中的 Vercel URL 仍是部署目标/占位配置
 
 ## v0.2 的三种期型
@@ -119,3 +120,7 @@ Cloudflare Pages：
 - Build output directory: dist
 
 正式发布前应确认 src/siteConfig.js 的 siteUrl 与实际公网域名一致。
+
+## License
+
+项目代码与原创文档使用 MIT License。馆藏图像、录音及其他外部素材继续遵循各自来源页标注的权利状态；仓库中的 rightsStatus 字段用于记录编辑层的使用判断，不改变上游素材的权利状态。

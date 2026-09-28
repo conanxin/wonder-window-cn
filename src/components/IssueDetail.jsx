@@ -1,12 +1,35 @@
+import { useState } from 'react'
 import { LegacyIssueDetail } from './LegacyIssueDetail.jsx'
 
+function MediaFallback({ label, sourceUrl }) {
+  return (
+    <div className="media-fallback" role="status">
+      <strong>{label}未能加载</strong>
+      <span>当前页面仍保留原件出口，不以占位图或替代媒体冒充原始对象。</span>
+      <a href={sourceUrl} rel="noreferrer" target="_blank">
+        打开原件
+      </a>
+    </div>
+  )
+}
+
 function EditorialMedia({ media }) {
+  const [loadFailed, setLoadFailed] = useState(false)
+
   if (media.kind === 'audio') {
     return (
       <figure className="editorial-media editorial-media-audio">
-        <audio controls preload="metadata" src={media.src}>
+        <audio
+          controls
+          onError={() => setLoadFailed(true)}
+          preload="metadata"
+          src={media.src}
+        >
           你的浏览器不支持音频播放。可以直接打开来源链接。
         </audio>
+        {loadFailed ? (
+          <MediaFallback label="音频" sourceUrl={media.sourceUrl} />
+        ) : null}
         <figcaption>
           <span>{media.caption}</span>
           <a href={media.sourceUrl} rel="noreferrer" target="_blank">
@@ -20,9 +43,18 @@ function EditorialMedia({ media }) {
 
   return (
     <figure className="editorial-media">
-      <a href={media.sourceUrl} rel="noreferrer" target="_blank">
-        <img alt={media.alt} loading="lazy" src={media.src} />
-      </a>
+      {loadFailed ? (
+        <MediaFallback label="图像" sourceUrl={media.sourceUrl} />
+      ) : (
+        <a href={media.sourceUrl} rel="noreferrer" target="_blank">
+          <img
+            alt={media.alt}
+            loading="lazy"
+            onError={() => setLoadFailed(true)}
+            src={media.src}
+          />
+        </a>
+      )}
       <figcaption>
         <span>{media.caption}</span>
         <a href={media.sourceUrl} rel="noreferrer" target="_blank">
