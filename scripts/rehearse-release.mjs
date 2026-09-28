@@ -24,6 +24,18 @@ function rehearseCandidate(candidate, publishedAt) {
     )
   }
 
+  const candidateCollision = editorialCandidates.find(
+    (other) =>
+      other !== candidate &&
+      (other.slug === candidate.slug || other.id === candidate.id),
+  )
+
+  if (candidateCollision) {
+    fail(
+      `${candidate.slug}: id/slug collides with editorial candidate ${candidateCollision.slug}`,
+    )
+  }
+
   const projectedIssue = {
     ...candidate,
     publicationStatus: 'PUBLISHED',
