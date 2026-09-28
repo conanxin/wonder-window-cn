@@ -20,6 +20,8 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci
+      - name: Rehearse READY editorial release path
+        run: npm run rehearse:ready
       - name: Build production and verify candidate exclusion
         run: npm run build
       - name: Prove Vercel production cannot be overridden by preview flag
