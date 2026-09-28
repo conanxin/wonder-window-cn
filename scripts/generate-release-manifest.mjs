@@ -3,9 +3,11 @@ import { dirname } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import {
   buildProposalSnapshot,
+  buildReviewSnapshot,
   candidateFingerprint,
   proposalFingerprint,
   publicIssuesFingerprint,
+  reviewSnapshotFingerprint,
 } from './release-manifest-fingerprint.mjs'
 import { editorialCandidates } from '../src/data/editorialCandidates.js'
 import { issues } from '../src/data/issues.js'
@@ -60,15 +62,10 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
   const projectedArchivePosition =
     projectedIssues.findIndex((issue) => issue.slug === candidate.slug) + 1
 
-  const media = (candidate.media || []).map((item) => ({
-    kind: item.kind,
-    rightsStatus: item.rightsStatus,
-    sourceUrl: item.sourceUrl,
-    assetUrl: item.src || null,
-    caption: item.caption || null,
-  }))
-
   const candidateFingerprintSha256 = candidateFingerprint(candidate)
+  const reviewSnapshot = buildReviewSnapshot(candidate)
+  const reviewSnapshotFingerprintSha256 =
+    reviewSnapshotFingerprint(reviewSnapshot)
   const publicIssuesFingerprintSha256 = publicIssuesFingerprint(issues)
   const proposedPublication = {
     publicationStatus: 'PUBLISHED',
@@ -97,6 +94,7 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
     syndication,
     migrationPlan,
     publicIssuesFingerprintSha256,
+    reviewSnapshotFingerprintSha256,
   })
 
   return {
@@ -125,18 +123,14 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
     sourceContext: {
       gitCommit: process.env.GITHUB_SHA || null,
     },
+    reviewSnapshotFingerprintSha256,
     proposalFingerprintSha256: proposalFingerprint(proposalSnapshot),
     proposedPublication,
     syndication,
-    editorial: {
-      coreQuestion: candidate.coreQuestion,
-      editorialPoint: candidate.editorialPoint,
-      editorialPath: candidate.editorialPath,
-      closingQuestion: candidate.closingQuestion,
-    },
-    evidenceBoundary: candidate.evidenceBoundary || [],
-    media,
-    sources: candidate.sources || [],
+    editorial: reviewSnapshot.editorial,
+    evidenceBoundary: reviewSnapshot.evidenceBoundary,
+    media: reviewSnapshot.media,
+    sources: reviewSnapshot.sources,
     migrationPlan,
     rehearsal: {
       passed: true,
