@@ -1,10 +1,10 @@
-import { readFile, mkdir, writeFile } from 'node:fs/promises'
-import { dirname } from 'node:path'
-import { spawnSync } from 'node:child_process'
+import { readFile, mkdir, writeFile, lstat } from 'node:fs/promises'
+import { basename, dirname, resolve } from 'node:path'
 import { createHash } from 'node:crypto'
 import { editorialCandidates } from '../src/data/editorialCandidates.js'
 import { publishedEditorialIssues } from '../src/data/publishedEditorialIssues.js'
 import { hashJson } from './release-manifest-fingerprint.mjs'
+import { verifyManifest } from './verify-approved-release-manifest.mjs'
 
 function fail(message) {
   throw new Error(message)
@@ -14,11 +14,13 @@ function sha256Text(value) {
   return createHash('sha256').update(value).digest('hex')
 }
 
+const PREVIEW_OUTPUT_ROOT = resolve('publication-patch-preview')
+
 function parseArgs(argv) {
   const [manifestPath, ...rest] = argv
   if (!manifestPath) {
     fail(
-      'Usage: npm run preview:publication-patch -- <approved-manifest.json> [--output <path>]',
+      'Usage: npm run preview:publication-patch -- <approved-manifest.json> [--output publication-patch-preview/<name>.json]',
     )
   }
 
@@ -29,20 +31,40 @@ function parseArgs(argv) {
   return { manifestPath, output }
 }
 
-function verifyApprovedManifest(manifestPath) {
-  const verification = spawnSync(
-    process.execPath,
-    ['scripts/verify-approved-release-manifest.mjs', manifestPath],
-    { encoding: 'utf8' },
-  )
+async function resolveSafeOutputPath(output) {
+  if (!output) {
+    return null
+  }
 
-  if (verification.status !== 0) {
+  const requested = resolve(output)
+  if (dirname(requested) !== PREVIEW_OUTPUT_ROOT) {
     fail(
-      `Publication patch preview blocked by approved-manifest verifier:\n${verification.stderr || verification.stdout}`,
+      'Publication patch preview output must be a direct JSON file inside publication-patch-preview/',
     )
   }
 
-  return JSON.parse(verification.stdout)
+  const name = basename(requested)
+  if (!/^[A-Za-z0-9._-]+\.json$/.test(name)) {
+    fail('Publication patch preview output filename must be a simple .json filename')
+  }
+
+  await mkdir(PREVIEW_OUTPUT_ROOT, { recursive: true })
+  const rootStat = await lstat(PREVIEW_OUTPUT_ROOT)
+  if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) {
+    fail('publication-patch-preview/ must be a real directory, not a symlink')
+  }
+
+  return requested
+}
+
+function verifyApprovedManifest(manifest) {
+  try {
+    return verifyManifest(manifest)
+  } catch (error) {
+    fail(
+      `Publication patch preview blocked by approved-manifest verifier:\n${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
 }
 
 function summarizeOperations({ slug, publishedAt }) {
@@ -54,8 +76,10 @@ function summarizeOperations({ slug, publishedAt }) {
 }
 
 const { manifestPath, output } = parseArgs(process.argv.slice(2))
-const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
-const verification = verifyApprovedManifest(manifestPath)
+const manifestText = await readFile(manifestPath, 'utf8')
+const manifest = JSON.parse(manifestText)
+const verification = verifyApprovedManifest(manifest)
+const outputPath = await resolveSafeOutputPath(output)
 
 const slug = verification.slug
 const candidate = editorialCandidates.find((item) => item.slug === slug)
@@ -180,10 +204,13 @@ const preview = {
 
 const json = `${JSON.stringify(preview, null, 2)}\n`
 
-if (output) {
-  await mkdir(dirname(output), { recursive: true })
-  await writeFile(output, json, 'utf8')
-  console.log(`Publication patch preview written: ${output}`)
+if (outputPath) {
+  await writeFile(outputPath, json, {
+    encoding: 'utf8',
+    flag: 'wx',
+    mode: 0o600,
+  })
+  console.log(`Publication patch preview written: ${outputPath}`)
 } else {
   process.stdout.write(json)
 }
