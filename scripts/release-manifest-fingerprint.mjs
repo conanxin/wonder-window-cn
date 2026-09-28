@@ -10,11 +10,24 @@ export function candidateFingerprint(candidate) {
   return hashJson(candidate)
 }
 
+export function publicIssuesFingerprint(issues) {
+  const orderedSnapshot = issues.map((issue) => ({
+    id: issue.id,
+    slug: issue.slug,
+    publishedAt: issue.publishedAt,
+    schemaVersion: issue.schemaVersion,
+    contentFingerprintSha256: hashJson(issue),
+  }))
+
+  return hashJson(orderedSnapshot)
+}
+
 export function buildProposalSnapshot({
   candidateFingerprintSha256,
   proposedPublication,
   syndication,
   migrationPlan,
+  publicIssuesFingerprintSha256,
 }) {
   return {
     candidateFingerprintSha256,
@@ -24,6 +37,7 @@ export function buildProposalSnapshot({
     projectedArchivePosition: proposedPublication.projectedArchivePosition,
     publicIssueCountBefore: proposedPublication.publicIssueCountBefore,
     publicIssueCountAfter: proposedPublication.publicIssueCountAfter,
+    publicIssuesFingerprintSha256,
     rssPubDate: syndication.rssPubDate,
     sitemapLastmod: syndication.sitemapLastmod,
     migrationPlan: {
