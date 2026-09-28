@@ -23,6 +23,11 @@ const manifest = JSON.parse(await readFile(output, 'utf8'))
 if (manifest.action !== 'PUBLICATION_DECISION_ONLY') {
   throw new Error('Manifest must remain a decision-only artifact')
 }
+if ('sourceContext' in manifest) {
+  throw new Error(
+    'Manifest must not claim unverifiable git-commit provenance',
+  )
+}
 if (manifest.mutatesRepository !== false || manifest.sendsNewsletter !== false) {
   throw new Error('Manifest must explicitly remain non-publishing')
 }
