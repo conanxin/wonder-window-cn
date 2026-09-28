@@ -7,7 +7,8 @@ export default defineConfig(({ command }) => {
   const editorialPreviewEnabled =
     command === 'serve' ||
     deploymentEnv === 'preview' ||
-    process.env.VITE_EDITORIAL_PREVIEW === 'true'
+    (!process.env.VERCEL_ENV &&
+      process.env.VITE_EDITORIAL_PREVIEW === 'true')
 
   return {
     plugins: [react()],
