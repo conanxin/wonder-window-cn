@@ -6,6 +6,7 @@ const pendingPath = `${dir}/pending.json`
 const approvedPath = `${dir}/approved.json`
 const stalePath = `${dir}/stale.json`
 const wrongUrlPath = `${dir}/wrong-url.json`
+const invalidApprovedAtPath = `${dir}/invalid-approved-at.json`
 
 await mkdir(dir, { recursive: true })
 
@@ -81,8 +82,19 @@ if (runVerifier(wrongUrlPath).status === 0) {
   throw new Error('Stale canonical URL must fail verification')
 }
 
+const invalidApprovedAt = structuredClone(approved)
+invalidApprovedAt.decision.approvedAt = '2099-02-31T00:00:00Z'
+await writeFile(
+  invalidApprovedAtPath,
+  JSON.stringify(invalidApprovedAt, null, 2),
+)
+
+if (runVerifier(invalidApprovedAtPath).status === 0) {
+  throw new Error('Impossible approval timestamp must fail verification')
+}
+
 await rm(dir, { recursive: true, force: true })
 
 console.log(
-  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint and URL rejected',
+  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, and impossible approval timestamp rejected',
 )
