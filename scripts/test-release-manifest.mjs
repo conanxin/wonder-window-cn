@@ -36,6 +36,13 @@ if (!/^[a-f0-9]{64}$/.test(manifest.proposalFingerprintSha256)) {
   throw new Error('Manifest must fingerprint the full publication proposal')
 }
 if (
+  !/^[a-f0-9]{64}$/.test(
+    manifest.proposedPublication.publicIssuesFingerprintSha256,
+  )
+) {
+  throw new Error('Manifest must fingerprint the ordered public issue set')
+}
+if (
   manifest.decision?.requiresExplicitApproval !== true ||
   manifest.decision?.approvalStatus !== 'PENDING' ||
   manifest.decision?.approvedBy !== null ||
