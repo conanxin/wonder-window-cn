@@ -20,7 +20,12 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci
-      - name: Build production and verify candidate privacy
+      - name: Build production and verify candidate exclusion
+        run: npm run build
+      - name: Prove Vercel production cannot be overridden by preview flag
+        env:
+          VERCEL_ENV: production
+          VITE_EDITORIAL_PREVIEW: 'true'
         run: npm run build
       - name: Build editorial preview and verify candidate inclusion
         env:
