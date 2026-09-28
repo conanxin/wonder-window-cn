@@ -48,6 +48,10 @@ function requireApprovedDecision(manifest) {
   requireString(manifest.decision.approvedBy, 'decision.approvedBy')
   requireString(manifest.decision.approvedAt, 'decision.approvedAt')
 
+  if (!manifest.decision.approvedProposal) {
+    fail('Approved manifest missing decision.approvedProposal snapshot')
+  }
+
   const approvedAt = manifest.decision.approvedAt
   if (
     !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(
@@ -108,6 +112,19 @@ function verifyManifest(manifest) {
   if (manifest.candidate.contentFingerprintSha256 !== currentFingerprint) {
     fail(
       `${candidate.slug}: approved manifest fingerprint does not match current candidate`,
+    )
+  }
+
+  const approvedProposal = manifest.decision.approvedProposal
+  if (
+    approvedProposal.contentFingerprintSha256 !== currentFingerprint ||
+    approvedProposal.publishedAt !==
+      manifest.proposedPublication?.publishedAt ||
+    approvedProposal.canonicalUrl !==
+      manifest.proposedPublication?.canonicalUrl
+  ) {
+    fail(
+      `${candidate.slug}: approved proposal snapshot does not match current manifest proposal`,
     )
   }
 
