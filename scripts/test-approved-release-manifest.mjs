@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process'
 import {
   buildProposalSnapshot,
   proposalFingerprint,
+  reviewSnapshotFingerprint,
 } from './release-manifest-fingerprint.mjs'
 
 const dir = 'tmp-approved-manifest-test'
@@ -13,6 +14,7 @@ const wrongUrlPath = `${dir}/wrong-url.json`
 const invalidApprovedAtPath = `${dir}/invalid-approved-at.json`
 const staleProposalPath = `${dir}/stale-proposal.json`
 const stalePublicSetPath = `${dir}/stale-public-set.json`
+const tamperedReviewPath = `${dir}/tampered-review.json`
 
 await mkdir(dir, { recursive: true })
 
@@ -52,6 +54,8 @@ approved.decision.approvedBy = 'p12-contract-test'
 approved.decision.approvedAt = '2099-12-01T00:00:00Z'
 approved.decision.approvedProposal = {
   contentFingerprintSha256: approved.candidate.contentFingerprintSha256,
+  reviewSnapshotFingerprintSha256:
+    approved.reviewSnapshotFingerprintSha256,
   publishedAt: approved.proposedPublication.publishedAt,
   canonicalUrl: approved.proposedPublication.canonicalUrl,
   proposalFingerprintSha256: approved.proposalFingerprintSha256,
@@ -120,6 +124,8 @@ const stalePublicProposalSnapshot = buildProposalSnapshot({
   migrationPlan: stalePublicSet.migrationPlan,
   publicIssuesFingerprintSha256:
     stalePublicSet.proposedPublication.publicIssuesFingerprintSha256,
+  reviewSnapshotFingerprintSha256:
+    stalePublicSet.reviewSnapshotFingerprintSha256,
 })
 stalePublicSet.proposalFingerprintSha256 = proposalFingerprint(
   stalePublicProposalSnapshot,
@@ -135,8 +141,44 @@ if (runVerifier(stalePublicSetPath).status === 0) {
   throw new Error('Stale public issue set must fail verification')
 }
 
+const tamperedReview = structuredClone(approved)
+tamperedReview.sources = []
+const tamperedReviewSnapshot = {
+  editorial: tamperedReview.editorial,
+  evidenceBoundary: tamperedReview.evidenceBoundary,
+  media: tamperedReview.media,
+  sources: tamperedReview.sources,
+}
+tamperedReview.reviewSnapshotFingerprintSha256 =
+  reviewSnapshotFingerprint(tamperedReviewSnapshot)
+const tamperedProposalSnapshot = buildProposalSnapshot({
+  candidateFingerprintSha256:
+    tamperedReview.candidate.contentFingerprintSha256,
+  proposedPublication: tamperedReview.proposedPublication,
+  syndication: tamperedReview.syndication,
+  migrationPlan: tamperedReview.migrationPlan,
+  publicIssuesFingerprintSha256:
+    tamperedReview.proposedPublication.publicIssuesFingerprintSha256,
+  reviewSnapshotFingerprintSha256:
+    tamperedReview.reviewSnapshotFingerprintSha256,
+})
+tamperedReview.proposalFingerprintSha256 =
+  proposalFingerprint(tamperedProposalSnapshot)
+tamperedReview.decision.approvedProposal.reviewSnapshotFingerprintSha256 =
+  tamperedReview.reviewSnapshotFingerprintSha256
+tamperedReview.decision.approvedProposal.proposalFingerprintSha256 =
+  tamperedReview.proposalFingerprintSha256
+await writeFile(
+  tamperedReviewPath,
+  JSON.stringify(tamperedReview, null, 2),
+)
+
+if (runVerifier(tamperedReviewPath).status === 0) {
+  throw new Error('Tampered human review packet must fail verification')
+}
+
 await rm(dir, { recursive: true, force: true })
 
 console.log(
-  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, approval timestamp, proposal fingerprint, and public issue set rejected',
+  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, approval timestamp, proposal fingerprint, public issue set, and tampered review packet rejected',
 )
