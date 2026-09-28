@@ -81,6 +81,23 @@ manifest 是 **decision-only artifact**：不会修改 registry、不会把状�
 
 GitHub Actions 的 `release-decision-manifest` workflow 可以手动生成该 JSON 并作为 artifact 下载审阅。
 
+### Approved Manifest Verification
+
+批准动作仍由人完成；仓库**不提供自动批准命令**。批准后的 manifest 至少需要把：
+
+- `decision.approvalStatus` 改为 `APPROVED`
+- `decision.approvedBy` 写为非空批准人
+- `decision.approvedAt` 写为 UTC ISO-8601 时间
+- `decision.approvedProposal` 固定当时批准的 candidate fingerprint、`publishedAt` 与 canonical URL
+
+然后执行只读验证：
+
+    npm run verify:approved-manifest -- path/to/approved-manifest.json
+
+verifier 会重新读取当前 `editorialCandidates.js`、重算 SHA-256、重跑 release rehearsal、复核当前 publication contract、公开 issue 数量/排序、canonical URL、RSS / sitemap 与 registry migration plan。
+
+只要候选正文、slug、发布日期、公开 URL 或公开 issue 集发生变化，旧 approved manifest 就会失败并要求重新生成/重新批准。验证成功只输出 `PROMOTION_PLAN_VERIFIED`，**不会修改源码、不会移动 registry、不会发布、不会发 newsletter**。
+
 
 ## 当前编辑候选
 
