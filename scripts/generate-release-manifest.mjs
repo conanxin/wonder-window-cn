@@ -5,6 +5,7 @@ import {
   buildProposalSnapshot,
   candidateFingerprint,
   proposalFingerprint,
+  publicIssuesFingerprint,
 } from './release-manifest-fingerprint.mjs'
 import { editorialCandidates } from '../src/data/editorialCandidates.js'
 import { issues } from '../src/data/issues.js'
@@ -68,6 +69,7 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
   }))
 
   const candidateFingerprintSha256 = candidateFingerprint(candidate)
+  const publicIssuesFingerprintSha256 = publicIssuesFingerprint(issues)
   const proposedPublication = {
     publicationStatus: 'PUBLISHED',
     publishedAt,
@@ -75,6 +77,7 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
     projectedArchivePosition,
     publicIssueCountBefore: issues.length,
     publicIssueCountAfter: issues.length + 1,
+    publicIssuesFingerprintSha256,
   }
   const syndication = {
     rssPubDate: new Date(`${publishedAt}T08:00:00+08:00`).toUTCString(),
@@ -93,6 +96,7 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
     proposedPublication,
     syndication,
     migrationPlan,
+    publicIssuesFingerprintSha256,
   })
 
   return {
