@@ -15,6 +15,7 @@ const invalidApprovedAtPath = `${dir}/invalid-approved-at.json`
 const staleProposalPath = `${dir}/stale-proposal.json`
 const stalePublicSetPath = `${dir}/stale-public-set.json`
 const tamperedReviewPath = `${dir}/tampered-review.json`
+const tamperedCandidatePath = `${dir}/tampered-candidate.json`
 
 await mkdir(dir, { recursive: true })
 
@@ -144,6 +145,16 @@ if (runVerifier(stalePublicSetPath).status === 0) {
 const tamperedReview = structuredClone(approved)
 tamperedReview.sources = []
 const tamperedReviewSnapshot = {
+  candidate: {
+    id: tamperedReview.candidate.id,
+    slug: tamperedReview.candidate.slug,
+    title: tamperedReview.candidate.title,
+    currentStatus: tamperedReview.candidate.currentStatus,
+    schemaVersion: tamperedReview.candidate.schemaVersion,
+    issueType: tamperedReview.candidate.issueType,
+    issueTypeLabel: tamperedReview.candidate.issueTypeLabel,
+    notionUrl: tamperedReview.candidate.notionUrl,
+  },
   editorial: tamperedReview.editorial,
   evidenceBoundary: tamperedReview.evidenceBoundary,
   media: tamperedReview.media,
@@ -177,8 +188,56 @@ if (runVerifier(tamperedReviewPath).status === 0) {
   throw new Error('Tampered human review packet must fail verification')
 }
 
+const tamperedCandidate = structuredClone(approved)
+tamperedCandidate.candidate.notionUrl =
+  'https://app.notion.com/p/not-the-approved-candidate'
+tamperedCandidate.candidate.currentStatus = 'PUBLISHED'
+const tamperedCandidateSnapshot = {
+  candidate: {
+    id: tamperedCandidate.candidate.id,
+    slug: tamperedCandidate.candidate.slug,
+    title: tamperedCandidate.candidate.title,
+    currentStatus: tamperedCandidate.candidate.currentStatus,
+    schemaVersion: tamperedCandidate.candidate.schemaVersion,
+    issueType: tamperedCandidate.candidate.issueType,
+    issueTypeLabel: tamperedCandidate.candidate.issueTypeLabel,
+    notionUrl: tamperedCandidate.candidate.notionUrl,
+  },
+  editorial: tamperedCandidate.editorial,
+  evidenceBoundary: tamperedCandidate.evidenceBoundary,
+  media: tamperedCandidate.media,
+  sources: tamperedCandidate.sources,
+}
+tamperedCandidate.reviewSnapshotFingerprintSha256 =
+  reviewSnapshotFingerprint(tamperedCandidateSnapshot)
+const tamperedCandidateProposalSnapshot = buildProposalSnapshot({
+  candidateFingerprintSha256:
+    tamperedCandidate.candidate.contentFingerprintSha256,
+  proposedPublication: tamperedCandidate.proposedPublication,
+  syndication: tamperedCandidate.syndication,
+  migrationPlan: tamperedCandidate.migrationPlan,
+  publicIssuesFingerprintSha256:
+    tamperedCandidate.proposedPublication.publicIssuesFingerprintSha256,
+  reviewSnapshotFingerprintSha256:
+    tamperedCandidate.reviewSnapshotFingerprintSha256,
+})
+tamperedCandidate.proposalFingerprintSha256 =
+  proposalFingerprint(tamperedCandidateProposalSnapshot)
+tamperedCandidate.decision.approvedProposal.reviewSnapshotFingerprintSha256 =
+  tamperedCandidate.reviewSnapshotFingerprintSha256
+tamperedCandidate.decision.approvedProposal.proposalFingerprintSha256 =
+  tamperedCandidate.proposalFingerprintSha256
+await writeFile(
+  tamperedCandidatePath,
+  JSON.stringify(tamperedCandidate, null, 2),
+)
+
+if (runVerifier(tamperedCandidatePath).status === 0) {
+  throw new Error('Tampered displayed candidate fields must fail verification')
+}
+
 await rm(dir, { recursive: true, force: true })
 
 console.log(
-  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, approval timestamp, proposal fingerprint, public issue set, and tampered review packet rejected',
+  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, approval timestamp, proposal fingerprint, public issue set, tampered review packet, and tampered candidate display fields rejected',
 )
