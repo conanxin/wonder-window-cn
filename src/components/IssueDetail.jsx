@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { LegacyIssueDetail } from './LegacyIssueDetail.jsx'
+import { getIssueDisplayDate } from '../data/issueDisplay.js'
 
 function MediaFallback({ label, sourceUrl }) {
   return (
@@ -80,7 +81,7 @@ function EditorialIssueDetail({ issue }) {
           </div>
           <h1>{issue.title}</h1>
           <div className="detail-meta">
-            <span>{issue.date}</span>
+            <span>{getIssueDisplayDate(issue)}</span>
             <span>{issue.readingTime}</span>
           </div>
         </div>
