@@ -1,0 +1,27 @@
+name: release-readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: Editorial issue slug to preflight
+        required: true
+        type: string
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Check release candidate
+        run: npm run check:release -- "${{ inputs.slug }}"
+      - name: Build current public site
+        run: npm run build
