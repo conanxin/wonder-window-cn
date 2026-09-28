@@ -91,6 +91,8 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
       approvedBy: null,
       approvedAt: null,
       approvedProposal: null,
+      approvedAt: null,
+      approvedProposal: null,
     },
     sourceContext: {
       gitCommit: process.env.GITHUB_SHA || null,
