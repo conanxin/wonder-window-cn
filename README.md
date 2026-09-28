@@ -2,7 +2,7 @@
 
 《万物小窗》是一份策展式中文通讯，也是一套面向书、图像、档案、地图、照片与声音的轻量数字出版系统。
 
-当前进入 **v0.2 Editorial Architecture Migration**：从早期“固定栏目模板”迁移到由对象、阅读路径、来源与证据边界驱动的编辑模型。
+当前进入 **v0.2 Release Candidate Preview Gate**：架构已合并到 main，未发布候选与 Production bundle 分离；候选只在本地开发和 Vercel Preview 环境加载。
 
 ## 当前架构
 
@@ -11,8 +11,9 @@
 - 数据库：无
 - 正式订阅服务：尚未接入
 - 公开内容：只读取 publicationStatus = PUBLISHED 的 issue
-- v0.2 候选：保存在 src/data/editorialIssues.js
-- 开发预览：/editorial-preview/:slug，仅在 Vite DEV 模式注册
+- 未发布候选：保存在 src/data/editorialCandidates.js，Production bundle 不得包含这些正文
+- 已发布 v0.2 内容：进入 src/data/publishedEditorialIssues.js
+- 编辑预览：/editorial-preview/:slug 仅在本地 DEV、Vercel Preview 或显式 VITE_EDITORIAL_PREVIEW=true 时注册
 - RSS / sitemap：继续只读取公开 issues 导出\n- Public consumers：Home / Archive / lead visual 已同时兼容 Legacy 与 v0.2 schema\n- Release guard：prebuild 先执行 publication contract，PUBLISHED issue 缺少必要字段时构建直接失败
 - 外部媒体：加载失败时保留显式 fallback 与原件出口，不生成替代内容冒充原件
 - 公网部署：当前未确认存在；src/siteConfig.js 中的 Vercel URL 仍是部署目标/占位配置
@@ -75,7 +76,7 @@
 - /editorial-preview/trial-03-utamaro-butterfly-dragonfly
 - /editorial-preview/w40-victor-7127f-voices-without-names
 
-开发预览路由不会在生产环境注册。
+Production 不注册编辑预览路由；CI 会扫描 dist，若发现候选标题／slug 泄漏进 Production bundle，构建直接失败。Preview build 则反向验证候选内容确实存在。
 
 ## 内容工作流
 
