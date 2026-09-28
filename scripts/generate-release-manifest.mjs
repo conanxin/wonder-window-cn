@@ -1,7 +1,14 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
+import {
+  buildProposalSnapshot,
+  buildReviewSnapshot,
+  candidateFingerprint,
+  proposalFingerprint,
+  publicIssuesFingerprint,
+  reviewSnapshotFingerprint,
+} from './release-manifest-fingerprint.mjs'
 import { editorialCandidates } from '../src/data/editorialCandidates.js'
 import { issues } from '../src/data/issues.js'
 import { absoluteUrl } from '../src/siteConfig.js'
@@ -42,12 +49,6 @@ function runRehearsal(slug, publishedAt) {
   return rehearsal.stdout.trim()
 }
 
-function candidateFingerprint(candidate) {
-  return createHash('sha256')
-    .update(JSON.stringify(candidate))
-    .digest('hex')
-}
-
 function buildManifest(candidate, publishedAt, rehearsalOutput) {
   const projectedIssues = [
     ...issues,
@@ -61,13 +62,40 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
   const projectedArchivePosition =
     projectedIssues.findIndex((issue) => issue.slug === candidate.slug) + 1
 
-  const media = (candidate.media || []).map((item) => ({
-    kind: item.kind,
-    rightsStatus: item.rightsStatus,
-    sourceUrl: item.sourceUrl,
-    assetUrl: item.src || null,
-    caption: item.caption || null,
-  }))
+  const candidateFingerprintSha256 = candidateFingerprint(candidate)
+  const reviewSnapshot = buildReviewSnapshot(candidate)
+  const reviewSnapshotFingerprintSha256 =
+    reviewSnapshotFingerprint(reviewSnapshot)
+  const publicIssuesFingerprintSha256 = publicIssuesFingerprint(issues)
+  const proposedPublication = {
+    publicationStatus: 'PUBLISHED',
+    publishedAt,
+    canonicalUrl: absoluteUrl(`/issues/${candidate.slug}`),
+    projectedArchivePosition,
+    publicIssueCountBefore: issues.length,
+    publicIssueCountAfter: issues.length + 1,
+    publicIssuesFingerprintSha256,
+  }
+  const syndication = {
+    rssPubDate: new Date(`${publishedAt}T08:00:00+08:00`).toUTCString(),
+    sitemapLastmod: publishedAt,
+  }
+  const migrationPlan = {
+    sourceRegistry: 'src/data/editorialCandidates.js',
+    targetRegistry: 'src/data/publishedEditorialIssues.js',
+    removeCandidateRecord: true,
+    addPublishedRecord: true,
+    setPublicationStatus: 'PUBLISHED',
+    setPublishedAt: publishedAt,
+  }
+  const proposalSnapshot = buildProposalSnapshot({
+    candidateFingerprintSha256,
+    proposedPublication,
+    syndication,
+    migrationPlan,
+    publicIssuesFingerprintSha256,
+    reviewSnapshotFingerprintSha256,
+  })
 
   return {
     manifestVersion: 1,
@@ -75,61 +103,31 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
     mutatesRepository: false,
     sendsNewsletter: false,
     candidate: {
-      id: candidate.id,
-      slug: candidate.slug,
-      title: candidate.title,
-      currentStatus: candidate.publicationStatus,
-      schemaVersion: candidate.schemaVersion,
-      issueType: candidate.issueType,
-      issueTypeLabel: candidate.issueTypeLabel,
-      notionUrl: candidate.notionUrl || null,
-      contentFingerprintSha256: candidateFingerprint(candidate),
+      ...reviewSnapshot.candidate,
+      contentFingerprintSha256: candidateFingerprintSha256,
     },
     decision: {
       requiresExplicitApproval: true,
       approvalStatus: 'PENDING',
       approvedBy: null,
+      approvedAt: null,
+      approvedProposal: null,
     },
-    sourceContext: {
-      gitCommit: process.env.GITHUB_SHA || null,
-    },
-    proposedPublication: {
-      publicationStatus: 'PUBLISHED',
-      publishedAt,
-      canonicalUrl: absoluteUrl(`/issues/${candidate.slug}`),
-      projectedArchivePosition,
-      publicIssueCountBefore: issues.length,
-      publicIssueCountAfter: issues.length + 1,
-    },
-    syndication: {
-      rssPubDate: new Date(`${publishedAt}T08:00:00+08:00`).toUTCString(),
-      sitemapLastmod: publishedAt,
-    },
-    editorial: {
-      coreQuestion: candidate.coreQuestion,
-      editorialPoint: candidate.editorialPoint,
-      editorialPath: candidate.editorialPath,
-      closingQuestion: candidate.closingQuestion,
-    },
-    evidenceBoundary: candidate.evidenceBoundary || [],
-    media,
-    sources: candidate.sources || [],
-    migrationPlan: {
-      sourceRegistry: 'src/data/editorialCandidates.js',
-      targetRegistry: 'src/data/publishedEditorialIssues.js',
-      removeCandidateRecord: true,
-      addPublishedRecord: true,
-      setPublicationStatus: 'PUBLISHED',
-      setPublishedAt: publishedAt,
-    },
+    reviewSnapshotFingerprintSha256,
+    proposalFingerprintSha256: proposalFingerprint(proposalSnapshot),
+    proposedPublication,
+    syndication,
+    editorial: reviewSnapshot.editorial,
+    evidenceBoundary: reviewSnapshot.evidenceBoundary,
+    media: reviewSnapshot.media,
+    sources: reviewSnapshot.sources,
+    migrationPlan,
     rehearsal: {
       passed: true,
       output: rehearsalOutput,
     },
-    unresolvedExternalVerification: [
-      'Confirm the canonical Production site URL is the intended public domain before publication.',
-      'Confirm the final public issue route is remotely reachable after a real publication deployment.',
-    ],
+    unresolvedExternalVerification:
+      reviewSnapshot.unresolvedExternalVerification,
   }
 }
 

@@ -23,6 +23,11 @@ const manifest = JSON.parse(await readFile(output, 'utf8'))
 if (manifest.action !== 'PUBLICATION_DECISION_ONLY') {
   throw new Error('Manifest must remain a decision-only artifact')
 }
+if ('sourceContext' in manifest) {
+  throw new Error(
+    'Manifest must not claim unverifiable git-commit provenance',
+  )
+}
 if (manifest.mutatesRepository !== false || manifest.sendsNewsletter !== false) {
   throw new Error('Manifest must explicitly remain non-publishing')
 }
@@ -32,9 +37,25 @@ if (manifest.candidate.currentStatus !== 'READY') {
 if (!/^[a-f0-9]{64}$/.test(manifest.candidate.contentFingerprintSha256)) {
   throw new Error('Manifest must bind to an exact candidate SHA-256 fingerprint')
 }
+if (!/^[a-f0-9]{64}$/.test(manifest.reviewSnapshotFingerprintSha256)) {
+  throw new Error('Manifest must fingerprint the human review snapshot')
+}
+if (!/^[a-f0-9]{64}$/.test(manifest.proposalFingerprintSha256)) {
+  throw new Error('Manifest must fingerprint the full publication proposal')
+}
+if (
+  !/^[a-f0-9]{64}$/.test(
+    manifest.proposedPublication.publicIssuesFingerprintSha256,
+  )
+) {
+  throw new Error('Manifest must fingerprint the ordered public issue set')
+}
 if (
   manifest.decision?.requiresExplicitApproval !== true ||
-  manifest.decision?.approvalStatus !== 'PENDING'
+  manifest.decision?.approvalStatus !== 'PENDING' ||
+  manifest.decision?.approvedBy !== null ||
+  manifest.decision?.approvedAt !== null ||
+  manifest.decision?.approvedProposal !== null
 ) {
   throw new Error('Manifest must preserve an explicit pending publication decision')
 }

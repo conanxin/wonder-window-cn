@@ -2,7 +2,7 @@
 
 《万物小窗》是一份策展式中文通讯，也是一套面向书、图像、档案、地图、照片与声音的轻量数字出版系统。
 
-当前进入 **v0.2 Release Candidate Preview Gate**：架构已合并到 main，未发布候选与 Production bundle 分离；候选只在本地开发和 Vercel Preview 环境加载。
+当前进入 **P12｜Approved Manifest Verification Gate**：架构、Preview gate、release rehearsal 与 decision manifest 已进入 main；当前新增的是“批准后的 manifest 是否仍对应当前候选内容和发布提案”的只读验证层。验证通过也不会自动刊发。
 
 ## 当前架构
 
@@ -80,6 +80,23 @@ manifest 会先调用同一 release rehearsal；只有 READY 候选通过后才�
 manifest 是 **decision-only artifact**：不会修改 registry、不会把状态改成 PUBLISHED、不会发送 newsletter。
 
 GitHub Actions 的 `release-decision-manifest` workflow 可以手动生成该 JSON 并作为 artifact 下载审阅。
+
+### Approved Manifest Verification
+
+批准动作仍由人完成；仓库**不提供自动批准命令**。批准后的 manifest 至少需要把：
+
+- `decision.approvalStatus` 改为 `APPROVED`
+- `decision.approvedBy` 写为非空批准人
+- `decision.approvedAt` 写为 UTC ISO-8601 时间
+- `decision.approvedProposal` 固定当时批准的 candidate fingerprint、**human review snapshot fingerprint**、`publishedAt`、canonical URL 与完整 `proposalFingerprintSha256`
+
+然后执行只读验证：
+
+    npm run verify:approved-manifest -- path/to/approved-manifest.json
+
+verifier 会重新读取当前 `editorialCandidates.js`、重算 SHA-256、重跑 release rehearsal、复核当前 publication contract、公开 issue 数量/排序、canonical URL、RSS / sitemap 与 registry migration plan。
+
+manifest 还会单独计算 `reviewSnapshotFingerprintSha256`，覆盖人实际审阅的 candidate 摘要（包括 currentStatus / issueTypeLabel / notionUrl）、editorial、media、sources 与 evidenceBoundary；verifier 会从当前 candidate 重新生成同一 review snapshot 并逐项比对。完整 `proposalFingerprintSha256` 同时覆盖 candidate fingerprint、review snapshot fingerprint、发布时间、canonical URL、archive position、公开 issue 数量、**按当前顺序排列的 public issue set 内容指纹**、RSS、sitemap 与 registry migration plan。只要候选、人类审阅包或现有公开 issue 集发生变化，旧 approved manifest 就会失败并要求重新生成/重新批准。验证成功只输出 `PROMOTION_PLAN_VERIFIED`，**不会修改源码、不会移动 registry、不会发布、不会发 newsletter**。
 
 
 ## 当前编辑候选
