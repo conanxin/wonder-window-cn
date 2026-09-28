@@ -13,7 +13,9 @@
 - 公开内容：只读取 publicationStatus = PUBLISHED 的 issue
 - v0.2 候选：保存在 src/data/editorialIssues.js
 - 开发预览：/editorial-preview/:slug，仅在 Vite DEV 模式注册
-- RSS / sitemap：继续只读取公开 issues 导出\n- Public consumers：Home / Archive / lead visual 已同时兼容 Legacy 与 v0.2 schema\n- Release guard：prebuild 先执行 publication contract，PUBLISHED issue 缺少必要字段时构建直接失败
+- RSS / sitemap：继续只读取公开 issues 导出
+- Public consumers：Home / Archive / lead visual 已同时兼容 Legacy 与 v0.2 schema
+- Release guard：prebuild 先执行 publication contract，PUBLISHED issue 缺少必要字段时构建直接失败
 - 外部媒体：加载失败时保留显式 fallback 与原件出口，不生成替代内容冒充原件
 - 公网部署：当前未确认存在；src/siteConfig.js 中的 Vercel URL 仍是部署目标/占位配置
 
@@ -37,6 +39,16 @@
 - closingQuestion
 
 只有 PUBLISHED 才进入公开站点。READY、ISSUE_CANDIDATE 等状态可以进入代码与本地预览，但不会自动进入公开 Archive、RSS 或 sitemap。
+
+### 发布前预检
+
+READY 候选在改成 PUBLISHED 之前先执行：
+
+    npm run check:release -- trial-03-utamaro-butterfly-dragonfly
+
+该命令只检查候选是否满足 v0.2 结构与字段要求，不会修改 publicationStatus，也不会触发邮件或公开发布。
+
+GitHub Actions 还提供手动 `release-readiness` workflow，可输入候选 slug 做同样的非发布预检。正式发布仍需要单独修改 publicationStatus 与 publishedAt，再经 PR / build / deployment。
 
 ## 当前编辑候选
 
