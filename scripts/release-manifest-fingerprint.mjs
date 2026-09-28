@@ -10,6 +10,31 @@ export function candidateFingerprint(candidate) {
   return hashJson(candidate)
 }
 
+export function buildReviewSnapshot(candidate) {
+  return {
+    editorial: {
+      coreQuestion: candidate.coreQuestion,
+      editorialPoint: candidate.editorialPoint,
+      editorialPath: candidate.editorialPath,
+      closingQuestion: candidate.closingQuestion,
+    },
+    evidenceBoundary: candidate.evidenceBoundary || [],
+    media: (candidate.media || []).map((item) => ({
+      kind: item.kind,
+      src: item.src || null,
+      alt: item.alt || null,
+      rightsStatus: item.rightsStatus,
+      sourceUrl: item.sourceUrl,
+      caption: item.caption || null,
+    })),
+    sources: candidate.sources || [],
+  }
+}
+
+export function reviewSnapshotFingerprint(snapshot) {
+  return hashJson(snapshot)
+}
+
 export function publicIssuesFingerprint(issues) {
   const orderedSnapshot = issues.map((issue) => ({
     id: issue.id,
@@ -28,6 +53,7 @@ export function buildProposalSnapshot({
   syndication,
   migrationPlan,
   publicIssuesFingerprintSha256,
+  reviewSnapshotFingerprintSha256,
 }) {
   return {
     candidateFingerprintSha256,
@@ -38,6 +64,7 @@ export function buildProposalSnapshot({
     publicIssueCountBefore: proposedPublication.publicIssueCountBefore,
     publicIssueCountAfter: proposedPublication.publicIssueCountAfter,
     publicIssuesFingerprintSha256,
+    reviewSnapshotFingerprintSha256,
     rssPubDate: syndication.rssPubDate,
     sitemapLastmod: syndication.sitemapLastmod,
     migrationPlan: {
