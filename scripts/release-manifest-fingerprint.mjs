@@ -21,7 +21,7 @@ export function buildReviewSnapshot(candidate) {
     evidenceBoundary: candidate.evidenceBoundary || [],
     media: (candidate.media || []).map((item) => ({
       kind: item.kind,
-      src: item.src || null,
+      assetUrl: item.src || null,
       alt: item.alt || null,
       rightsStatus: item.rightsStatus,
       sourceUrl: item.sourceUrl,
