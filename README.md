@@ -88,7 +88,7 @@ GitHub Actions 的 `release-decision-manifest` workflow 可以手动生成该 JS
 - `decision.approvalStatus` 改为 `APPROVED`
 - `decision.approvedBy` 写为非空批准人
 - `decision.approvedAt` 写为 UTC ISO-8601 时间
-- `decision.approvedProposal` 固定当时批准的 candidate fingerprint、`publishedAt`、canonical URL 与完整 `proposalFingerprintSha256`
+- `decision.approvedProposal` 固定当时批准的 candidate fingerprint、**human review snapshot fingerprint**、`publishedAt`、canonical URL 与完整 `proposalFingerprintSha256`
 
 然后执行只读验证：
 
@@ -96,7 +96,7 @@ GitHub Actions 的 `release-decision-manifest` workflow 可以手动生成该 JS
 
 verifier 会重新读取当前 `editorialCandidates.js`、重算 SHA-256、重跑 release rehearsal、复核当前 publication contract、公开 issue 数量/排序、canonical URL、RSS / sitemap 与 registry migration plan。
 
-manifest 还会对完整发布提案计算 `proposalFingerprintSha256`，覆盖 candidate fingerprint、发布时间、canonical URL、archive position、公开 issue 数量、**按当前顺序排列的 public issue set 内容指纹**、RSS、sitemap 与 registry migration plan。只要现有公开 issue 被新增、删除、替换、改写或重排，旧 approved manifest 就会失败并要求重新生成/重新批准。验证成功只输出 `PROMOTION_PLAN_VERIFIED`，**不会修改源码、不会移动 registry、不会发布、不会发 newsletter**。
+manifest 还会单独计算 `reviewSnapshotFingerprintSha256`，覆盖人实际审阅的 editorial、media、sources 与 evidenceBoundary；verifier 会从当前 candidate 重新生成同一 review snapshot 并逐项比对。完整 `proposalFingerprintSha256` 同时覆盖 candidate fingerprint、review snapshot fingerprint、发布时间、canonical URL、archive position、公开 issue 数量、**按当前顺序排列的 public issue set 内容指纹**、RSS、sitemap 与 registry migration plan。只要候选、人类审阅包或现有公开 issue 集发生变化，旧 approved manifest 就会失败并要求重新生成/重新批准。验证成功只输出 `PROMOTION_PLAN_VERIFIED`，**不会修改源码、不会移动 registry、不会发布、不会发 newsletter**。
 
 
 ## 当前编辑候选
