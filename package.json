@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "check:publication": "node scripts/check-publication-contract.mjs",
+    "check:release": "node scripts/check-release-candidate.mjs",
     "rss": "node scripts/generate-rss.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "prebuild": "npm run check:publication && npm run rss && npm run sitemap",
