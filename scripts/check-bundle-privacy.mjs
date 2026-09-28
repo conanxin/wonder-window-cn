@@ -4,7 +4,8 @@ import { editorialCandidates } from '../src/data/editorialCandidates.js'
 
 const previewEnabled =
   process.env.VERCEL_ENV === 'preview' ||
-  process.env.VITE_EDITORIAL_PREVIEW === 'true'
+  (!process.env.VERCEL_ENV &&
+    process.env.VITE_EDITORIAL_PREVIEW === 'true')
 
 const searchableExtensions = new Set([
   '.html',
