@@ -174,7 +174,7 @@ export const issues = [
     issueType: 'legacy',
     issueTypeLabel: 'Legacy｜早期栏目制',
   })),
-]
+].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
 
 export const allIssues = issues
 
