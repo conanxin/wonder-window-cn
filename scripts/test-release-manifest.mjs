@@ -32,6 +32,9 @@ if (manifest.candidate.currentStatus !== 'READY') {
 if (!/^[a-f0-9]{64}$/.test(manifest.candidate.contentFingerprintSha256)) {
   throw new Error('Manifest must bind to an exact candidate SHA-256 fingerprint')
 }
+if (!/^[a-f0-9]{64}$/.test(manifest.reviewSnapshotFingerprintSha256)) {
+  throw new Error('Manifest must fingerprint the human review snapshot')
+}
 if (!/^[a-f0-9]{64}$/.test(manifest.proposalFingerprintSha256)) {
   throw new Error('Manifest must fingerprint the full publication proposal')
 }
