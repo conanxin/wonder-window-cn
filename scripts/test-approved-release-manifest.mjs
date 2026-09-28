@@ -1,5 +1,9 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
+import {
+  buildProposalSnapshot,
+  proposalFingerprint,
+} from './release-manifest-fingerprint.mjs'
 
 const dir = 'tmp-approved-manifest-test'
 const pendingPath = `${dir}/pending.json`
@@ -8,6 +12,7 @@ const stalePath = `${dir}/stale.json`
 const wrongUrlPath = `${dir}/wrong-url.json`
 const invalidApprovedAtPath = `${dir}/invalid-approved-at.json`
 const staleProposalPath = `${dir}/stale-proposal.json`
+const stalePublicSetPath = `${dir}/stale-public-set.json`
 
 await mkdir(dir, { recursive: true })
 
@@ -104,8 +109,34 @@ if (runVerifier(staleProposalPath).status === 0) {
   throw new Error('Stale approved proposal fingerprint must fail verification')
 }
 
+const stalePublicSet = structuredClone(approved)
+stalePublicSet.proposedPublication.publicIssuesFingerprintSha256 =
+  '0'.repeat(64)
+const stalePublicProposalSnapshot = buildProposalSnapshot({
+  candidateFingerprintSha256:
+    stalePublicSet.candidate.contentFingerprintSha256,
+  proposedPublication: stalePublicSet.proposedPublication,
+  syndication: stalePublicSet.syndication,
+  migrationPlan: stalePublicSet.migrationPlan,
+  publicIssuesFingerprintSha256:
+    stalePublicSet.proposedPublication.publicIssuesFingerprintSha256,
+})
+stalePublicSet.proposalFingerprintSha256 = proposalFingerprint(
+  stalePublicProposalSnapshot,
+)
+stalePublicSet.decision.approvedProposal.proposalFingerprintSha256 =
+  stalePublicSet.proposalFingerprintSha256
+await writeFile(
+  stalePublicSetPath,
+  JSON.stringify(stalePublicSet, null, 2),
+)
+
+if (runVerifier(stalePublicSetPath).status === 0) {
+  throw new Error('Stale public issue set must fail verification')
+}
+
 await rm(dir, { recursive: true, force: true })
 
 console.log(
-  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, approval timestamp, and proposal fingerprint rejected',
+  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, approval timestamp, proposal fingerprint, and public issue set rejected',
 )
