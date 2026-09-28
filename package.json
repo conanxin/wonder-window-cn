@@ -10,6 +10,8 @@
     "rehearse:release": "node scripts/rehearse-release.mjs",
     "rehearse:ready": "node scripts/rehearse-release.mjs --all-ready --date 2099-12-31",
     "test:release-rehearsal": "node scripts/test-release-rehearsal.mjs",
+    "release:manifest": "node scripts/generate-release-manifest.mjs",
+    "test:release-manifest": "node scripts/test-release-manifest.mjs",
     "check:bundle-privacy": "node scripts/check-bundle-privacy.mjs",
     "rss": "node scripts/generate-rss.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
