@@ -12,13 +12,23 @@ for (const issue of issues) {
   errors.push(...validateIssue(issue, { requirePublishedAt: true }))
 }
 
-const seenSlugs = new Set()
+const publicIds = new Set()
+const publicSlugs = new Set()
+
 for (const issue of issues) {
-  if (seenSlugs.has(issue.slug)) {
+  if (publicIds.has(issue.id)) {
+    errors.push(`${issue.slug}: duplicate public id ${issue.id}`)
+  }
+  if (publicSlugs.has(issue.slug)) {
     errors.push(`${issue.slug}: duplicate public slug`)
   }
-  seenSlugs.add(issue.slug)
+
+  publicIds.add(issue.id)
+  publicSlugs.add(issue.slug)
 }
+
+const candidateIds = new Set()
+const candidateSlugs = new Set()
 
 for (const candidate of editorialCandidates) {
   if (candidate.publicationStatus === 'PUBLISHED') {
@@ -26,6 +36,22 @@ for (const candidate of editorialCandidates) {
       `${candidate.slug}: PUBLISHED content must move out of editorialCandidates into publishedEditorialIssues`,
     )
   }
+
+  if (candidateIds.has(candidate.id)) {
+    errors.push(`${candidate.slug}: duplicate candidate id ${candidate.id}`)
+  }
+  if (candidateSlugs.has(candidate.slug)) {
+    errors.push(`${candidate.slug}: duplicate candidate slug`)
+  }
+  if (publicIds.has(candidate.id)) {
+    errors.push(`${candidate.slug}: candidate id already exists in public issues`)
+  }
+  if (publicSlugs.has(candidate.slug)) {
+    errors.push(`${candidate.slug}: candidate slug already exists in public issues`)
+  }
+
+  candidateIds.add(candidate.id)
+  candidateSlugs.add(candidate.slug)
 }
 
 if (errors.length) {
