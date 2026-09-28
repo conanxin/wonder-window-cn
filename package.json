@@ -15,6 +15,8 @@
     "test:release-workflow-safety": "node scripts/test-release-workflow-safety.mjs",
     "verify:approved-manifest": "node scripts/verify-approved-release-manifest.mjs",
     "test:approved-manifest": "node scripts/test-approved-release-manifest.mjs",
+    "preview:publication-patch": "node scripts/generate-publication-patch-preview.mjs",
+    "test:publication-patch-preview": "node scripts/test-publication-patch-preview.mjs",
     "check:bundle-privacy": "node scripts/check-bundle-privacy.mjs",
     "rss": "node scripts/generate-rss.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
