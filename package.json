@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "check:publication": "node scripts/check-publication-contract.mjs",
+    "check:bundle-privacy": "node scripts/check-bundle-privacy.mjs",
     "rss": "node scripts/generate-rss.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "prebuild": "npm run check:publication && npm run rss && npm run sitemap",
-    "build": "vite build",
+    "build": "vite build && npm run check:bundle-privacy",
     "lint": "oxlint",
     "preview": "vite preview"
   },
