@@ -14,9 +14,11 @@
 - 未发布候选：保存在 src/data/editorialCandidates.js；Production bundle 不得包含这些正文。**注意：仓库本身是 public，因此这里的“未发布”指未进入正式网站／RSS／sitemap，不表示源码机密。**
 - 已发布 v0.2 内容：进入 src/data/publishedEditorialIssues.js
 - 编辑预览：/editorial-preview/:slug 仅在本地 DEV、Vercel Preview 或非 Vercel 构建显式 VITE_EDITORIAL_PREVIEW=true 时注册；VERCEL_ENV=production 时该 flag 不可覆盖
-- RSS / sitemap：继续只读取公开 issues 导出\n- Public consumers：Home / Archive / lead visual 已同时兼容 Legacy 与 v0.2 schema\n- Release guard：prebuild 先执行 publication contract，PUBLISHED issue 缺少必要字段时构建直接失败
+- RSS / sitemap：继续只读取公开 issues 导出
+- Public consumers：Home / Archive / lead visual 已同时兼容 Legacy 与 v0.2 schema
+- Release guard：prebuild 先执行 publication contract，PUBLISHED issue 缺少必要字段时构建直接失败
 - 外部媒体：加载失败时保留显式 fallback 与原件出口，不生成替代内容冒充原件
-- 公网部署：当前未确认存在；src/siteConfig.js 中的 Vercel URL 仍是部署目标/占位配置
+- Vercel：GitHub Preview integration 已确认可用；PR Preview 会生成独立预览地址。Production canonical URL 仍以 src/siteConfig.js 与实际域名核验结果为准
 
 ## v0.2 的三种期型
 
@@ -38,6 +40,15 @@
 - closingQuestion
 
 只有 PUBLISHED 才进入公开站点。READY、ISSUE_CANDIDATE 等状态可以进入代码与本地预览，但不会自动进入公开 Archive、RSS 或 sitemap。
+
+### READY 候选发布前预检
+
+在把候选移动到 `publishedEditorialIssues.js` 之前，先执行：
+
+    npm run check:release -- trial-03-utamaro-butterfly-dragonfly
+
+该命令要求候选状态为 READY，并检查 v0.2 必需字段与 schemaVersion；它不会修改状态、不会发送邮件、也不会公开发布内容。
+
 
 ## 当前编辑候选
 
