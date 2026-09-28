@@ -98,6 +98,30 @@ verifier 会重新读取当前 `editorialCandidates.js`、重算 SHA-256、重�
 
 manifest 还会单独计算 `reviewSnapshotFingerprintSha256`，覆盖人实际审阅的 candidate 摘要（包括 currentStatus / issueTypeLabel / notionUrl）、editorial、media、sources 与 evidenceBoundary；verifier 会从当前 candidate 重新生成同一 review snapshot 并逐项比对。完整 `proposalFingerprintSha256` 同时覆盖 candidate fingerprint、review snapshot fingerprint、发布时间、canonical URL、archive position、公开 issue 数量、**按当前顺序排列的 public issue set 内容指纹**、RSS、sitemap 与 registry migration plan。只要候选、人类审阅包或现有公开 issue 集发生变化，旧 approved manifest 就会失败并要求重新生成/重新批准。验证成功只输出 `PROMOTION_PLAN_VERIFIED`，**不会修改源码、不会移动 registry、不会发布、不会发 newsletter**。
 
+### Publication Patch Preview
+
+P12 verifier 通过后，可以生成下一步的只读 publication patch preview：
+
+    npm run preview:publication-patch -- path/to/approved-manifest.json
+
+或保存 JSON：
+
+    npm run preview:publication-patch -- path/to/approved-manifest.json --output publication-patch-preview/preview.json
+
+preview 只描述两条允许的 registry 变化：
+1. 从 `editorialCandidates.js` 按 slug 移除被批准的 READY candidate；
+2. 向 `publishedEditorialIssues.js` 增加同一 issue，并只把 `publicationStatus` 改为 `PUBLISHED`、`publishedAt` 改为批准 manifest 中的 exact date。
+
+同时记录：
+- 两个目标源码文件当前 SHA-256；
+- 变更前/后的 registry semantic-state SHA-256；
+- approved candidate / review / proposal / public-set fingerprints；
+- RSS / sitemap 预期 delta；
+- human-readable change summary；
+- 仍未关闭的 external verification blockers。
+
+它固定声明 `mutatesRepository=false`、`createsPullRequest=false`、`sendsNewsletter=false`。输出文件只允许是 `publication-patch-preview/` 目录下的直接 JSON 文件，并以 create-only 模式写入：不能覆盖已有文件，也不能把 registry 源文件或符号链接当作输出目标。manifest 只读取一次，P12 verifier 与 preview 生成共享同一个内存快照。当前两条 Production domain / public route 外部验收尚未关闭时，readiness 必须保持 `PATCH_PREVIEW_READY_PUBLICATION_BLOCKED`。
+
 
 ## 当前编辑候选
 

@@ -1,4 +1,6 @@
 import { readFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   buildProposalSnapshot,
   buildReviewSnapshot,
@@ -98,7 +100,7 @@ function runCurrentRehearsal(slug, publishedAt) {
   }
 }
 
-function verifyManifest(manifest) {
+export function verifyManifest(manifest) {
   requireApprovedDecision(manifest)
 
   requireString(manifest.candidate?.slug, 'candidate.slug')
@@ -335,13 +337,19 @@ function verifyManifest(manifest) {
   }
 }
 
-const [manifestPath] = process.argv.slice(2)
+const isDirectInvocation =
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) === resolve(process.argv[1])
 
-if (!manifestPath) {
-  fail('Usage: npm run verify:approved-manifest -- <manifest.json>')
+if (isDirectInvocation) {
+  const [manifestPath] = process.argv.slice(2)
+
+  if (!manifestPath) {
+    fail('Usage: npm run verify:approved-manifest -- <manifest.json>')
+  }
+
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
+  const result = verifyManifest(manifest)
+
+  console.log(JSON.stringify(result, null, 2))
 }
-
-const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
-const result = verifyManifest(manifest)
-
-console.log(JSON.stringify(result, null, 2))
