@@ -32,6 +32,8 @@ jobs:
         run: npm run test:approved-manifest
       - name: Test publication patch preview
         run: npm run test:publication-patch-preview
+      - name: Check approved trial-03 release proposal
+        run: npm run check:trial03-approved-proposal
       - name: Build production and verify candidate exclusion
         run: npm run build
       - name: Prove Vercel production cannot be overridden by preview flag
