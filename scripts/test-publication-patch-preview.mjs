@@ -1,12 +1,16 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile, symlink } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
 const dir = 'tmp-publication-patch-preview-test'
 const pendingPath = `${dir}/pending.json`
 const approvedPath = `${dir}/approved.json`
-const previewPath = `${dir}/preview.json`
+const outputDir = 'publication-patch-preview'
+const previewPath = `${outputDir}/contract-preview.json`
+const symlinkPreviewPath = `${outputDir}/registry-link.json`
 
 await mkdir(dir, { recursive: true })
+await rm(outputDir, { recursive: true, force: true })
 
 const candidateFile = 'src/data/editorialCandidates.js'
 const publishedFile = 'src/data/publishedEditorialIssues.js'
@@ -54,6 +58,39 @@ approved.decision.approvedProposal = {
   proposalFingerprintSha256: approved.proposalFingerprintSha256,
 }
 await writeFile(approvedPath, JSON.stringify(approved, null, 2))
+
+const directRegistryOutput = spawnSync(
+  process.execPath,
+  [
+    'scripts/generate-publication-patch-preview.mjs',
+    approvedPath,
+    '--output',
+    candidateFile,
+  ],
+  { encoding: 'utf8' },
+)
+
+if (directRegistryOutput.status === 0) {
+  throw new Error('Registry source files must be rejected as preview output paths')
+}
+
+await mkdir(outputDir, { recursive: true })
+await symlink(resolve(candidateFile), symlinkPreviewPath)
+
+const symlinkOutput = spawnSync(
+  process.execPath,
+  [
+    'scripts/generate-publication-patch-preview.mjs',
+    approvedPath,
+    '--output',
+    symlinkPreviewPath,
+  ],
+  { encoding: 'utf8' },
+)
+
+if (symlinkOutput.status === 0) {
+  throw new Error('Symlink preview outputs must not be followed or overwritten')
+}
 
 const previewRun = spawnSync(
   process.execPath,
@@ -129,7 +166,8 @@ if (candidateAfter !== candidateBefore || publishedAfter !== publishedBefore) {
 }
 
 await rm(dir, { recursive: true, force: true })
+await rm(outputDir, { recursive: true, force: true })
 
 console.log(
-  'Publication patch preview contract PASS: PENDING rejected; approved manifest produces a two-operation non-mutating preview with external blockers preserved',
+  'Publication patch preview contract PASS: PENDING rejected; approved manifest uses one verified snapshot; registry and symlink outputs are rejected; two-operation preview preserves external blockers without source mutation',
 )
