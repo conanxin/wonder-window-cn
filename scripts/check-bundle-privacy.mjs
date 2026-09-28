@@ -56,11 +56,11 @@ if (previewEnabled) {
 } else {
   if (found.length > 0) {
     throw new Error(
-      `Production bundle privacy failed: unpublished candidate markers found: ${found.join(', ')}`,
+      `Production publication-surface isolation failed: unpublished candidate markers found: ${found.join(', ')}`,
     )
   }
 
   console.log(
-    `Production bundle privacy OK: ${editorialCandidates.length} unpublished candidates absent from dist`,
+    `Production publication-surface isolation OK: ${editorialCandidates.length} unpublished candidates absent from dist`,
   )
 }
