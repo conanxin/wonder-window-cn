@@ -1,0 +1,39 @@
+name: release-decision-manifest
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: READY editorial candidate slug
+        required: true
+        type: string
+      published_at:
+        description: Proposed publication date (YYYY-MM-DD)
+        required: true
+        type: string
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Generate non-publishing decision manifest
+        env:
+          RELEASE_SLUG: ${{ inputs.slug }}
+          RELEASE_PUBLISHED_AT: ${{ inputs.published_at }}
+        run: |
+          npm run release:manifest --             "$RELEASE_SLUG"             "$RELEASE_PUBLISHED_AT"             --output             "release-manifest/decision.json"
+      - name: Upload decision manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-decision-manifest
+          path: release-manifest/*.json
+          if-no-files-found: error
