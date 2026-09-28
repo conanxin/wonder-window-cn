@@ -106,7 +106,7 @@ P12 verifier 通过后，可以生成下一步的只读 publication patch previe
 
 或保存 JSON：
 
-    npm run preview:publication-patch -- path/to/approved-manifest.json --output publication-patch/preview.json
+    npm run preview:publication-patch -- path/to/approved-manifest.json --output publication-patch-preview/preview.json
 
 preview 只描述两条允许的 registry 变化：
 1. 从 `editorialCandidates.js` 按 slug 移除被批准的 READY candidate；
@@ -120,7 +120,7 @@ preview 只描述两条允许的 registry 变化：
 - human-readable change summary；
 - 仍未关闭的 external verification blockers。
 
-它固定声明 `mutatesRepository=false`、`createsPullRequest=false`、`sendsNewsletter=false`。当前两条 Production domain / public route 外部验收尚未关闭时，readiness 必须保持 `PATCH_PREVIEW_READY_PUBLICATION_BLOCKED`。
+它固定声明 `mutatesRepository=false`、`createsPullRequest=false`、`sendsNewsletter=false`。输出文件只允许是 `publication-patch-preview/` 目录下的直接 JSON 文件，并以 create-only 模式写入：不能覆盖已有文件，也不能把 registry 源文件或符号链接当作输出目标。manifest 只读取一次，P12 verifier 与 preview 生成共享同一个内存快照。当前两条 Production domain / public route 外部验收尚未关闭时，readiness 必须保持 `PATCH_PREVIEW_READY_PUBLICATION_BLOCKED`。
 
 
 ## 当前编辑候选
