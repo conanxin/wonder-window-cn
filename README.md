@@ -96,7 +96,7 @@ GitHub Actions 的 `release-decision-manifest` workflow 可以手动生成该 JS
 
 verifier 会重新读取当前 `editorialCandidates.js`、重算 SHA-256、重跑 release rehearsal、复核当前 publication contract、公开 issue 数量/排序、canonical URL、RSS / sitemap 与 registry migration plan。
 
-manifest 还会对完整发布提案计算 `proposalFingerprintSha256`，覆盖 candidate fingerprint、发布时间、canonical URL、archive position、公开 issue 数量、RSS、sitemap 与 registry migration plan。只要这些任一变化，旧 approved manifest 就会失败并要求重新生成/重新批准。验证成功只输出 `PROMOTION_PLAN_VERIFIED`，**不会修改源码、不会移动 registry、不会发布、不会发 newsletter**。
+manifest 还会对完整发布提案计算 `proposalFingerprintSha256`，覆盖 candidate fingerprint、发布时间、canonical URL、archive position、公开 issue 数量、**按当前顺序排列的 public issue set 内容指纹**、RSS、sitemap 与 registry migration plan。只要现有公开 issue 被新增、删除、替换、改写或重排，旧 approved manifest 就会失败并要求重新生成/重新批准。验证成功只输出 `PROMOTION_PLAN_VERIFIED`，**不会修改源码、不会移动 registry、不会发布、不会发 newsletter**。
 
 
 ## 当前编辑候选
