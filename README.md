@@ -11,7 +11,7 @@
 - 数据库：无
 - 正式订阅服务：尚未接入
 - 公开内容：只读取 publicationStatus = PUBLISHED 的 issue
-- 未发布候选：保存在 src/data/editorialCandidates.js，Production bundle 不得包含这些正文
+- 未发布候选：保存在 src/data/editorialCandidates.js；Production bundle 不得包含这些正文。**注意：仓库本身是 public，因此这里的“未发布”指未进入正式网站／RSS／sitemap，不表示源码机密。**
 - 已发布 v0.2 内容：进入 src/data/publishedEditorialIssues.js
 - 编辑预览：/editorial-preview/:slug 仅在本地 DEV、Vercel Preview 或显式 VITE_EDITORIAL_PREVIEW=true 时注册
 - RSS / sitemap：继续只读取公开 issues 导出\n- Public consumers：Home / Archive / lead visual 已同时兼容 Legacy 与 v0.2 schema\n- Release guard：prebuild 先执行 publication contract，PUBLISHED issue 缺少必要字段时构建直接失败
