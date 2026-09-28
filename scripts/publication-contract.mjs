@@ -19,12 +19,26 @@ function requireArray(errors, issue, field, { allowEmpty = false } = {}) {
 function requireValidPublishedAt(errors, issue) {
   requireString(errors, issue, 'publishedAt')
 
+  if (typeof issue.publishedAt !== 'string' || !issue.publishedAt.trim()) {
+    return
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(issue.publishedAt)) {
+    errors.push(
+      `${issueLabel(issue)}: publishedAt must use YYYY-MM-DD`,
+    )
+    return
+  }
+
+  const [year, month, day] = issue.publishedAt.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day))
+
   if (
-    typeof issue.publishedAt === 'string' &&
-    issue.publishedAt.trim() &&
-    Number.isNaN(Date.parse(issue.publishedAt))
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
   ) {
-    errors.push(`${issueLabel(issue)}: invalid publishedAt`)
+    errors.push(`${issueLabel(issue)}: publishedAt is not a real calendar date`)
   }
 }
 
