@@ -1,4 +1,5 @@
-import { allIssues } from '../src/data/issues.js'
+import { editorialCandidates } from '../src/data/editorialCandidates.js'
+import { issues } from '../src/data/issues.js'
 
 const errors = []
 
@@ -14,9 +15,9 @@ function requireArray(issue, field, { allowEmpty = false } = {}) {
   }
 }
 
-for (const issue of allIssues) {
+for (const issue of issues) {
   if (issue.publicationStatus !== 'PUBLISHED') {
-    continue
+    errors.push(`${issue.slug}: public issue must be PUBLISHED`)
   }
 
   for (const field of ['id', 'slug', 'number', 'title', 'date', 'summary', 'publishedAt']) {
@@ -53,10 +54,18 @@ for (const issue of allIssues) {
   }
 }
 
+for (const candidate of editorialCandidates) {
+  if (candidate.publicationStatus === 'PUBLISHED') {
+    errors.push(
+      `${candidate.slug}: PUBLISHED content must move out of editorialCandidates into publishedEditorialIssues`,
+    )
+  }
+}
+
 if (errors.length) {
   throw new Error(`Publication contract failed:\n- ${errors.join('\n- ')}`)
 }
 
 console.log(
-  `Publication contract OK: ${allIssues.filter((issue) => issue.publicationStatus === 'PUBLISHED').length} published issues`,
+  `Publication contract OK: ${issues.length} public issues, ${editorialCandidates.length} private editorial candidates`,
 )
