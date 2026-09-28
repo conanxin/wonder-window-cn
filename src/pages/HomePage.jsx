@@ -5,7 +5,7 @@ import { SectionTitle } from '../components/SectionTitle.jsx'
 import { Seo } from '../components/Seo.jsx'
 import { SubscribeBox } from '../components/SubscribeBox.jsx'
 import { WonderVisual } from '../components/WonderVisual.jsx'
-import { issueTypeDefinitions } from '../data/editorialIssues.js'
+import { issueTypeDefinitions } from '../data/issueTypes.js'
 import { issues } from '../data/issues.js'
 
 const latestIssue = issues[0]

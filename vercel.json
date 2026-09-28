@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/editorial-preview/:slug", "destination": "/index.html" },
+    { "source": "/issues", "destination": "/index.html" },
+    { "source": "/issues/:slug", "destination": "/index.html" },
+    { "source": "/about", "destination": "/index.html" }
+  ]
+}

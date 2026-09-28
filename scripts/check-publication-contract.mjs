@@ -1,55 +1,30 @@
-import { allIssues } from '../src/data/issues.js'
+import { editorialCandidates } from '../src/data/editorialCandidates.js'
+import { issues } from '../src/data/issues.js'
+import { validateIssue } from './publication-contract.mjs'
 
 const errors = []
 
-function requireString(issue, field) {
-  if (typeof issue[field] !== 'string' || !issue[field].trim()) {
-    errors.push(`${issue.slug || issue.id}: missing ${field}`)
-  }
-}
-
-function requireArray(issue, field, { allowEmpty = false } = {}) {
-  if (!Array.isArray(issue[field]) || (!allowEmpty && issue[field].length === 0)) {
-    errors.push(`${issue.slug || issue.id}: invalid ${field}`)
-  }
-}
-
-for (const issue of allIssues) {
+for (const issue of issues) {
   if (issue.publicationStatus !== 'PUBLISHED') {
-    continue
+    errors.push(`${issue.slug}: public issue must be PUBLISHED`)
   }
 
-  for (const field of ['id', 'slug', 'number', 'title', 'date', 'summary', 'publishedAt']) {
-    requireString(issue, field)
+  errors.push(...validateIssue(issue, { requirePublishedAt: true }))
+}
+
+const seenSlugs = new Set()
+for (const issue of issues) {
+  if (seenSlugs.has(issue.slug)) {
+    errors.push(`${issue.slug}: duplicate public slug`)
   }
+  seenSlugs.add(issue.slug)
+}
 
-  requireArray(issue, 'tags', { allowEmpty: true })
-
-  if (issue.schemaVersion === 2) {
-    for (const field of [
-      'issueType',
-      'issueTypeLabel',
-      'coreQuestion',
-      'editorialPoint',
-      'closingQuestion',
-    ]) {
-      requireString(issue, field)
-    }
-
-    requireArray(issue, 'editorialPath')
-    requireArray(issue, 'sections')
-    requireArray(issue, 'sources')
-    requireArray(issue, 'evidenceBoundary', { allowEmpty: true })
-    requireArray(issue, 'media', { allowEmpty: true })
-  }
-
-  if (issue.schemaVersion === 1) {
-    if (!issue.visual?.variant) {
-      errors.push(`${issue.slug}: legacy issue missing visual.variant`)
-    }
-    if (!issue.word?.term) {
-      errors.push(`${issue.slug}: legacy issue missing word.term`)
-    }
+for (const candidate of editorialCandidates) {
+  if (candidate.publicationStatus === 'PUBLISHED') {
+    errors.push(
+      `${candidate.slug}: PUBLISHED content must move out of editorialCandidates into publishedEditorialIssues`,
+    )
   }
 }
 
@@ -58,5 +33,5 @@ if (errors.length) {
 }
 
 console.log(
-  `Publication contract OK: ${allIssues.filter((issue) => issue.publicationStatus === 'PUBLISHED').length} published issues`,
+  `Publication contract OK: ${issues.length} public issues, ${editorialCandidates.length} unpublished editorial candidates`,
 )
