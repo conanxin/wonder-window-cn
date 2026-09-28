@@ -1,4 +1,4 @@
-import { editorialIssues } from './editorialIssues.js'
+import { publishedEditorialIssues } from './publishedEditorialIssues.js'
 
 const legacyIssues = [
   {
@@ -165,8 +165,8 @@ const legacyIssues = [
   },
 ]
 
-export const allIssues = [
-  ...editorialIssues,
+export const issues = [
+  ...publishedEditorialIssues,
   ...legacyIssues.map((issue) => ({
     ...issue,
     publicationStatus: 'PUBLISHED',
@@ -176,18 +176,12 @@ export const allIssues = [
   })),
 ]
 
-export const issues = allIssues.filter(
-  (issue) => issue.publicationStatus === 'PUBLISHED',
-)
+export const allIssues = issues
 
 export const issueTags = ['全部', ...new Set(issues.flatMap((issue) => issue.tags || []))]
 
 export function getIssueBySlug(slug) {
   return issues.find((issue) => issue.slug === slug)
-}
-
-export function getEditorialIssueBySlug(slug) {
-  return editorialIssues.find((issue) => issue.slug === slug)
 }
 
 export function getAdjacentIssues(slug) {
