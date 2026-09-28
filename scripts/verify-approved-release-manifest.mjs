@@ -73,6 +73,11 @@ function requireApprovedDecision(manifest) {
   ) {
     fail('decision.approvedAt must be a real UTC calendar timestamp')
   }
+
+  const maxClockSkewMs = 5 * 60 * 1000
+  if (approvedDate.getTime() > Date.now() + maxClockSkewMs) {
+    fail('decision.approvedAt cannot be in the future')
+  }
 }
 
 function runCurrentRehearsal(slug, publishedAt) {
@@ -155,6 +160,8 @@ function verifyManifest(manifest) {
     evidenceBoundary: manifest.evidenceBoundary,
     media: manifest.media,
     sources: manifest.sources,
+    unresolvedExternalVerification:
+      manifest.unresolvedExternalVerification,
   }
 
   if (
