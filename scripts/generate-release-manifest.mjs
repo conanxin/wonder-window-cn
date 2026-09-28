@@ -113,9 +113,6 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
       approvedAt: null,
       approvedProposal: null,
     },
-    sourceContext: {
-      gitCommit: process.env.GITHUB_SHA || null,
-    },
     reviewSnapshotFingerprintSha256,
     proposalFingerprintSha256: proposalFingerprint(proposalSnapshot),
     proposedPublication,
