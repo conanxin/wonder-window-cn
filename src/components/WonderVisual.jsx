@@ -1,4 +1,48 @@
+import { useState } from 'react'
+
+function EditorialLeadVisual({ issue, size }) {
+  const [imageFailed, setImageFailed] = useState(false)
+  const media = issue.media?.[0]
+
+  if (media?.kind === 'image' && !imageFailed) {
+    return (
+      <a
+        className={`wonder-visual editorial-lead-image visual-${size}`}
+        href={media.sourceUrl}
+        rel="noreferrer"
+        target="_blank"
+        aria-label={`查看 ${issue.title} 的核心图像原件`}
+      >
+        <img
+          alt={media.alt || issue.title}
+          loading="lazy"
+          onError={() => setImageFailed(true)}
+          src={media.src}
+        />
+      </a>
+    )
+  }
+
+  return (
+    <div className={`wonder-visual editorial-lead-placeholder visual-${size}`}>
+      <span className="editorial-lead-kicker">
+        {media?.kind === 'audio' ? 'AUDIO / CLOSE LISTEN' : issue.issueTypeLabel}
+      </span>
+      <strong>{issue.coreQuestion || issue.title}</strong>
+      <span className="editorial-lead-note">
+        {imageFailed
+          ? '核心图像当前未能加载；详情页保留原件出口。'
+          : '这一期从对象、来源与证据边界出发，不使用固定栏目模板。'}
+      </span>
+    </div>
+  )
+}
+
 export function WonderVisual({ issue, size = 'default' }) {
+  if (issue.schemaVersion === 2) {
+    return <EditorialLeadVisual issue={issue} size={size} />
+  }
+
   const variant = issue.visual.variant
 
   return (

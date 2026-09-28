@@ -1,7 +1,7 @@
 export const siteConfig = {
   siteName: '万物小窗',
   siteDescription:
-    '《万物小窗》是一份写给好奇心、注意力和内在生活的中文周刊。每周打开一扇通往惊奇、自然、思想与生活智慧的窗。',
+    '《万物小窗》是一份策展式中文通讯：从书、图像、档案、地方、文章与声音中选择少量对象，建立关系、提供语境，并保留证据与原件出口。',
   siteUrl: 'https://wonder-window-cn.vercel.app',
   author: 'Conan Xin',
   rssPath: '/rss.xml',

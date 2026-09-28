@@ -180,7 +180,7 @@ export const issues = allIssues.filter(
   (issue) => issue.publicationStatus === 'PUBLISHED',
 )
 
-export const issueTags = ['全部', '注意力', '自然', '城市', '仪式', '阅读', '惊奇']
+export const issueTags = ['全部', ...new Set(issues.flatMap((issue) => issue.tags || []))]
 
 export function getIssueBySlug(slug) {
   return issues.find((issue) => issue.slug === slug)

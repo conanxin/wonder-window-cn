@@ -13,7 +13,7 @@
 - 公开内容：只读取 publicationStatus = PUBLISHED 的 issue
 - v0.2 候选：保存在 src/data/editorialIssues.js
 - 开发预览：/editorial-preview/:slug，仅在 Vite DEV 模式注册
-- RSS / sitemap：继续只读取公开 issues 导出
+- RSS / sitemap：继续只读取公开 issues 导出\n- Public consumers：Home / Archive / lead visual 已同时兼容 Legacy 与 v0.2 schema\n- Release guard：prebuild 先执行 publication contract，PUBLISHED issue 缺少必要字段时构建直接失败
 - 外部媒体：加载失败时保留显式 fallback 与原件出口，不生成替代内容冒充原件
 - 公网部署：当前未确认存在；src/siteConfig.js 中的 Vercel URL 仍是部署目标/占位配置
 

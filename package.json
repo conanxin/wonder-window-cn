@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "check:publication": "node scripts/check-publication-contract.mjs",
     "rss": "node scripts/generate-rss.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
-    "prebuild": "npm run rss && npm run sitemap",
+    "prebuild": "npm run check:publication && npm run rss && npm run sitemap",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"

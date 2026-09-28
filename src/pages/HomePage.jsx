@@ -5,6 +5,7 @@ import { SectionTitle } from '../components/SectionTitle.jsx'
 import { Seo } from '../components/Seo.jsx'
 import { SubscribeBox } from '../components/SubscribeBox.jsx'
 import { WonderVisual } from '../components/WonderVisual.jsx'
+import { issueTypeDefinitions } from '../data/editorialIssues.js'
 import { issues } from '../data/issues.js'
 
 const latestIssue = issues[0]
@@ -14,7 +15,7 @@ export function HomePage() {
     <>
       <Seo
         title="万物小窗"
-        description="每周打开一扇通往惊奇、自然、思想与生活智慧的窗。"
+        description="从书、图像、档案、地方与声音中选择少量对象，建立关系、提供语境，并保留证据与原件出口。"
       />
       <Hero latestIssue={latestIssue} />
 
@@ -29,6 +30,9 @@ export function HomePage() {
             <div className="feature-meta">
               <span>{latestIssue.date}</span>
               <span>{latestIssue.readingTime}</span>
+              {latestIssue.schemaVersion === 2 ? (
+                <span>{latestIssue.issueTypeLabel}</span>
+              ) : null}
             </div>
             <Link className="text-button" to={`/issues/${latestIssue.slug}`}>
               阅读这一期
@@ -41,27 +45,27 @@ export function HomePage() {
       <section className="section why-section">
         <div className="container why-grid">
           <SectionTitle
-            label="慢周刊"
-            title="为什么需要一份慢周刊"
-            intro="当信息流不断替我们决定看什么，慢下来就不只是审美选择，也是一种重新取回注意力的方式。"
+            label="编辑方法"
+            title="不是多收集，而是建立值得看的关系"
+            intro="《万物小窗》不以链接数量证明丰富。每一期先找到一个具体入口，再决定它需要一件对象，还是几件对象互相照亮。"
           />
           <div className="why-list">
             <article>
-              <span>反信息流</span>
+              <span>回到原件</span>
               <p>
-                不追逐即时热点，不把世界压缩成连续刷新。每一期只保留少量材料，让读者有时间咀嚼，而不是被下一条内容推走。
+                每期至少保留一个可以重新定位的核心对象：书页、图像、地图、档案、照片、声音或文章，并给出稳定的来源出口。
               </p>
             </article>
             <article>
-              <span>反焦虑</span>
+              <span>编辑贡献</span>
               <p>
-                这里不承诺效率跃迁，也不制造落后感。它更像一处安静的边桌，让你把散乱的一天放下来，重新听见自己的节奏。
+                不只摘要“它讲了什么”，而是指出一个值得注意的细节、差别、关系或疑问，让材料在重新观看后产生新的理解。
               </p>
             </article>
             <article>
-              <span>重新训练注意力</span>
+              <span>证据边界</span>
               <p>
-                注意力不是要被榨干的资源，而是可以被温柔使用的能力。自然、词语、图像和日常动作，都是练习观看的入口。
+                已知与未知同时保留。会改变对象身份、版本、日期、解释或使用状态的问题，在公开前必须解决或明确删去相关论断。
               </p>
             </article>
           </div>
@@ -71,22 +75,15 @@ export function HomePage() {
       <section className="section columns-section" id="columns">
         <div className="container">
           <SectionTitle
-            label="栏目结构"
-            title="每周收集五种慢下来的材料"
-            intro="它们不追逐热点，只把分散的注意力重新放回世界的纹理里。"
+            label="Issue Types"
+            title="三种期型，不设固定栏目"
+            intro="栏目服从对象。每期只选择最适合这一组材料的观看方法，不为了填满模板继续增加内容。"
           />
           <div className="column-grid">
-            {[
-              ['三道闪电', '三个短小而明亮的发现，来自自然、互联网、书页或街角。'],
-              ['本周图像', '一张原创抽象视觉，给无法立刻说清的感受留一个形状。'],
-              ['本周短文', '一篇温柔、清醒、诗性的沉思，把经验慢慢展开。'],
-              ['本周一词', '从词语进入生活，学习给隐约的感受命名。'],
-              ['本周深潜', '为一个主题留下入口，让好奇心继续往下走。'],
-              ['带走一个问题', '给日记、散步和睡前十分钟使用的小问题。'],
-            ].map(([title, text]) => (
-              <article className="column-card" key={title}>
-                <span>{title}</span>
-                <p>{text}</p>
+            {issueTypeDefinitions.map((type) => (
+              <article className="column-card" key={type.id}>
+                <span>{type.label}</span>
+                <p>{type.description}</p>
               </article>
             ))}
           </div>
@@ -97,9 +94,9 @@ export function HomePage() {
         <div className="container">
           <div className="section-row">
             <SectionTitle
-              label="精选往期"
-              title="三篇小窗"
-              intro="从重新观看、城市漫游，到日常仪式。每一期都可以独立阅读。"
+              label="往期"
+              title={`已发布的 ${issues.length} 篇小窗`}
+              intro="早期栏目制内容作为出版历史保留；新的 v0.2 期型会在通过 Publication Gate 后进入同一档案。"
             />
             <Link className="text-button" to="/issues">
               查看全部
@@ -123,15 +120,15 @@ export function HomePage() {
         <div className="container about-grid">
           <SectionTitle
             label="About"
-            title="不是信息简报，而是一份慢下来的练习。"
-            intro="《万物小窗》相信，世界并不缺少奇迹，缺少的是我们停下来观看的能力。"
+            title="Archive × Reading × Curation"
+            intro="《万物小窗》把个人档案、开放馆藏和持续阅读变成可以进入、可以复核、也可以重新回看的微型展览。"
           />
           <div className="about-body">
             <p>
-              我们每周收集三道闪电、一张图像、一个词、一篇短文和一个问题。它们来自互联网的边角、自然的变化、旧书的页缝、城市的细部，以及日常生活里那些差点被效率抹平的瞬间。
+              Conan Xin Archive 负责保存对象、来源与证据；《万物小窗》负责选择、建立关系、提供语境并形成一期。二者彼此连接，但不合并成同一个产品。
             </p>
             <Link className="text-button" to="/about">
-              了解它为什么存在
+              了解编辑方法
             </Link>
           </div>
         </div>
