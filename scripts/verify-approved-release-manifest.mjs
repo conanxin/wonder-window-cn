@@ -1,9 +1,11 @@
 import { readFile } from 'node:fs/promises'
 import {
   buildProposalSnapshot,
+  buildReviewSnapshot,
   candidateFingerprint,
   proposalFingerprint,
   publicIssuesFingerprint,
+  reviewSnapshotFingerprint,
 } from './release-manifest-fingerprint.mjs'
 import { spawnSync } from 'node:child_process'
 import { editorialCandidates } from '../src/data/editorialCandidates.js'
@@ -125,6 +127,35 @@ function verifyManifest(manifest) {
     )
   }
 
+  const currentReviewSnapshot = buildReviewSnapshot(candidate)
+  const currentReviewSnapshotFingerprint =
+    reviewSnapshotFingerprint(currentReviewSnapshot)
+
+  if (
+    manifest.reviewSnapshotFingerprintSha256 !==
+    currentReviewSnapshotFingerprint
+  ) {
+    fail(
+      `${candidate.slug}: human review snapshot fingerprint does not match current candidate`,
+    )
+  }
+
+  const manifestReviewSnapshot = {
+    editorial: manifest.editorial,
+    evidenceBoundary: manifest.evidenceBoundary,
+    media: manifest.media,
+    sources: manifest.sources,
+  }
+
+  if (
+    reviewSnapshotFingerprint(manifestReviewSnapshot) !==
+    currentReviewSnapshotFingerprint
+  ) {
+    fail(
+      `${candidate.slug}: human review fields do not match the current candidate`,
+    )
+  }
+
   if (manifest.proposedPublication?.publicationStatus !== 'PUBLISHED') {
     fail('Approved manifest must propose publicationStatus=PUBLISHED')
   }
@@ -237,6 +268,8 @@ function verifyManifest(manifest) {
     },
     migrationPlan: plan,
     publicIssuesFingerprintSha256: currentPublicIssuesFingerprint,
+    reviewSnapshotFingerprintSha256:
+      currentReviewSnapshotFingerprint,
   })
   const currentProposalFingerprint = proposalFingerprint(
     currentProposalSnapshot,
@@ -251,6 +284,8 @@ function verifyManifest(manifest) {
   const approvedProposal = manifest.decision.approvedProposal
   if (
     approvedProposal.contentFingerprintSha256 !== currentFingerprint ||
+    approvedProposal.reviewSnapshotFingerprintSha256 !==
+      currentReviewSnapshotFingerprint ||
     approvedProposal.publishedAt !== publishedAt ||
     approvedProposal.canonicalUrl !== canonicalUrl ||
     approvedProposal.proposalFingerprintSha256 !==
@@ -268,6 +303,8 @@ function verifyManifest(manifest) {
     approvedBy: manifest.decision.approvedBy,
     approvedAt: manifest.decision.approvedAt,
     contentFingerprintSha256: currentFingerprint,
+    reviewSnapshotFingerprintSha256:
+      currentReviewSnapshotFingerprint,
     publishedAt,
     canonicalUrl,
     projectedArchivePosition,
