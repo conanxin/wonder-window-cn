@@ -16,6 +16,8 @@ const staleProposalPath = `${dir}/stale-proposal.json`
 const stalePublicSetPath = `${dir}/stale-public-set.json`
 const tamperedReviewPath = `${dir}/tampered-review.json`
 const tamperedCandidatePath = `${dir}/tampered-candidate.json`
+const futureApprovedAtPath = `${dir}/future-approved-at.json`
+const tamperedWarningsPath = `${dir}/tampered-warnings.json`
 
 await mkdir(dir, { recursive: true })
 
@@ -52,7 +54,7 @@ if (runVerifier(pendingPath).status === 0) {
 const approved = structuredClone(pending)
 approved.decision.approvalStatus = 'APPROVED'
 approved.decision.approvedBy = 'p12-contract-test'
-approved.decision.approvedAt = '2099-12-01T00:00:00Z'
+approved.decision.approvedAt = '2026-09-28T00:00:00Z'
 approved.decision.approvedProposal = {
   contentFingerprintSha256: approved.candidate.contentFingerprintSha256,
   reviewSnapshotFingerprintSha256:
@@ -159,6 +161,8 @@ const tamperedReviewSnapshot = {
   evidenceBoundary: tamperedReview.evidenceBoundary,
   media: tamperedReview.media,
   sources: tamperedReview.sources,
+  unresolvedExternalVerification:
+    tamperedReview.unresolvedExternalVerification,
 }
 tamperedReview.reviewSnapshotFingerprintSha256 =
   reviewSnapshotFingerprint(tamperedReviewSnapshot)
@@ -207,6 +211,8 @@ const tamperedCandidateSnapshot = {
   evidenceBoundary: tamperedCandidate.evidenceBoundary,
   media: tamperedCandidate.media,
   sources: tamperedCandidate.sources,
+  unresolvedExternalVerification:
+    tamperedCandidate.unresolvedExternalVerification,
 }
 tamperedCandidate.reviewSnapshotFingerprintSha256 =
   reviewSnapshotFingerprint(tamperedCandidateSnapshot)
@@ -236,8 +242,69 @@ if (runVerifier(tamperedCandidatePath).status === 0) {
   throw new Error('Tampered displayed candidate fields must fail verification')
 }
 
+const futureApprovedAt = structuredClone(approved)
+futureApprovedAt.decision.approvedAt = '2099-12-01T00:00:00Z'
+await writeFile(
+  futureApprovedAtPath,
+  JSON.stringify(futureApprovedAt, null, 2),
+)
+
+if (runVerifier(futureApprovedAtPath).status === 0) {
+  throw new Error('Future approval timestamp must fail verification')
+}
+
+const tamperedWarnings = structuredClone(approved)
+tamperedWarnings.unresolvedExternalVerification = []
+const tamperedWarningsSnapshot = {
+  candidate: {
+    id: tamperedWarnings.candidate.id,
+    slug: tamperedWarnings.candidate.slug,
+    title: tamperedWarnings.candidate.title,
+    currentStatus: tamperedWarnings.candidate.currentStatus,
+    schemaVersion: tamperedWarnings.candidate.schemaVersion,
+    issueType: tamperedWarnings.candidate.issueType,
+    issueTypeLabel: tamperedWarnings.candidate.issueTypeLabel,
+    notionUrl: tamperedWarnings.candidate.notionUrl,
+  },
+  editorial: tamperedWarnings.editorial,
+  evidenceBoundary: tamperedWarnings.evidenceBoundary,
+  media: tamperedWarnings.media,
+  sources: tamperedWarnings.sources,
+  unresolvedExternalVerification:
+    tamperedWarnings.unresolvedExternalVerification,
+}
+tamperedWarnings.reviewSnapshotFingerprintSha256 =
+  reviewSnapshotFingerprint(tamperedWarningsSnapshot)
+const tamperedWarningsProposalSnapshot = buildProposalSnapshot({
+  candidateFingerprintSha256:
+    tamperedWarnings.candidate.contentFingerprintSha256,
+  proposedPublication: tamperedWarnings.proposedPublication,
+  syndication: tamperedWarnings.syndication,
+  migrationPlan: tamperedWarnings.migrationPlan,
+  publicIssuesFingerprintSha256:
+    tamperedWarnings.proposedPublication.publicIssuesFingerprintSha256,
+  reviewSnapshotFingerprintSha256:
+    tamperedWarnings.reviewSnapshotFingerprintSha256,
+})
+tamperedWarnings.proposalFingerprintSha256 =
+  proposalFingerprint(tamperedWarningsProposalSnapshot)
+tamperedWarnings.decision.approvedProposal.reviewSnapshotFingerprintSha256 =
+  tamperedWarnings.reviewSnapshotFingerprintSha256
+tamperedWarnings.decision.approvedProposal.proposalFingerprintSha256 =
+  tamperedWarnings.proposalFingerprintSha256
+await writeFile(
+  tamperedWarningsPath,
+  JSON.stringify(tamperedWarnings, null, 2),
+)
+
+if (runVerifier(tamperedWarningsPath).status === 0) {
+  throw new Error(
+    'Tampered external verification warnings must fail verification',
+  )
+}
+
 await rm(dir, { recursive: true, force: true })
 
 console.log(
-  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, approval timestamp, proposal fingerprint, public issue set, tampered review packet, and tampered candidate display fields rejected',
+  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, impossible/future approval timestamps, proposal fingerprint, public issue set, tampered review packet, candidate display fields, and external verification warnings rejected',
 )
