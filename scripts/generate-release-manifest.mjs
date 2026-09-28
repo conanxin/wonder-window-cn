@@ -129,10 +129,8 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
       passed: true,
       output: rehearsalOutput,
     },
-    unresolvedExternalVerification: [
-      'Confirm the canonical Production site URL is the intended public domain before publication.',
-      'Confirm the final public issue route is remotely reachable after a real publication deployment.',
-    ],
+    unresolvedExternalVerification:
+      reviewSnapshot.unresolvedExternalVerification,
   }
 }
 
