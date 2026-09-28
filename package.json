@@ -18,6 +18,7 @@
     "preview:publication-patch": "node scripts/generate-publication-patch-preview.mjs",
     "test:publication-patch-preview": "node scripts/test-publication-patch-preview.mjs",
     "check:trial03-approved-proposal": "node scripts/check-trial03-approved-proposal.mjs",
+    "test:issue-display-date": "node scripts/test-issue-display-date.mjs",
     "check:bundle-privacy": "node scripts/check-bundle-privacy.mjs",
     "rss": "node scripts/generate-rss.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
