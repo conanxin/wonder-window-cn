@@ -3,6 +3,7 @@ import {
   buildProposalSnapshot,
   candidateFingerprint,
   proposalFingerprint,
+  publicIssuesFingerprint,
 } from './release-manifest-fingerprint.mjs'
 import { spawnSync } from 'node:child_process'
 import { editorialCandidates } from '../src/data/editorialCandidates.js'
@@ -186,6 +187,16 @@ function verifyManifest(manifest) {
     fail(`${candidate.slug}: invalid projected public issue count`)
   }
 
+  const currentPublicIssuesFingerprint = publicIssuesFingerprint(issues)
+  if (
+    manifest.proposedPublication.publicIssuesFingerprintSha256 !==
+    currentPublicIssuesFingerprint
+  ) {
+    fail(
+      `${candidate.slug}: public issue set changed since approval; regenerate manifest`,
+    )
+  }
+
   const rssPubDate = new Date(
     `${publishedAt}T08:00:00+08:00`,
   ).toUTCString()
@@ -225,6 +236,7 @@ function verifyManifest(manifest) {
       sitemapLastmod: publishedAt,
     },
     migrationPlan: plan,
+    publicIssuesFingerprintSha256: currentPublicIssuesFingerprint,
   })
   const currentProposalFingerprint = proposalFingerprint(
     currentProposalSnapshot,
@@ -259,6 +271,7 @@ function verifyManifest(manifest) {
     publishedAt,
     canonicalUrl,
     projectedArchivePosition,
+    publicIssuesFingerprintSha256: currentPublicIssuesFingerprint,
     proposalFingerprintSha256: currentProposalFingerprint,
     mutatesRepository: false,
   }
