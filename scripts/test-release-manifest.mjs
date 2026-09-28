@@ -34,7 +34,10 @@ if (!/^[a-f0-9]{64}$/.test(manifest.candidate.contentFingerprintSha256)) {
 }
 if (
   manifest.decision?.requiresExplicitApproval !== true ||
-  manifest.decision?.approvalStatus !== 'PENDING'
+  manifest.decision?.approvalStatus !== 'PENDING' ||
+  manifest.decision?.approvedBy !== null ||
+  manifest.decision?.approvedAt !== null ||
+  manifest.decision?.approvedProposal !== null
 ) {
   throw new Error('Manifest must preserve an explicit pending publication decision')
 }
