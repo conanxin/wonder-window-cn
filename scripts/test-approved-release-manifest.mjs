@@ -43,6 +43,11 @@ const approved = structuredClone(pending)
 approved.decision.approvalStatus = 'APPROVED'
 approved.decision.approvedBy = 'p12-contract-test'
 approved.decision.approvedAt = '2099-12-01T00:00:00Z'
+approved.decision.approvedProposal = {
+  contentFingerprintSha256: approved.candidate.contentFingerprintSha256,
+  publishedAt: approved.proposedPublication.publishedAt,
+  canonicalUrl: approved.proposedPublication.canonicalUrl,
+}
 await writeFile(approvedPath, JSON.stringify(approved, null, 2))
 
 const verified = runVerifier(approvedPath)
