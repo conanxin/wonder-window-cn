@@ -56,10 +56,21 @@ function requireApprovedDecision(manifest) {
   if (
     !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(
       approvedAt,
-    ) ||
-    Number.isNaN(Date.parse(approvedAt))
+    )
   ) {
     fail('decision.approvedAt must be a valid UTC ISO-8601 timestamp')
+  }
+
+  const approvedDate = new Date(approvedAt)
+  const normalizedApprovedAt = approvedAt.includes('.')
+    ? approvedAt
+    : approvedAt.replace(/Z$/, '.000Z')
+
+  if (
+    Number.isNaN(approvedDate.getTime()) ||
+    approvedDate.toISOString() !== normalizedApprovedAt
+  ) {
+    fail('decision.approvedAt must be a real UTC calendar timestamp')
   }
 }
 
