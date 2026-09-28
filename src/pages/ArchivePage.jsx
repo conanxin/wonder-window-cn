@@ -11,14 +11,14 @@ export function ArchivePage() {
       return issues
     }
 
-    return issues.filter((issue) => issue.tags.includes(activeTag))
+    return issues.filter((issue) => (issue.tags || []).includes(activeTag))
   }, [activeTag])
 
   return (
     <>
       <Seo
         title="往期档案"
-        description="浏览《万物小窗》的全部期刊，并按注意力、自然、城市、仪式、阅读、惊奇筛选。"
+        description="浏览《万物小窗》已经公开的全部期刊，并按实际发布内容中的主题标签筛选。"
       />
       <section className="page-hero archive-hero">
         <div className="container">
@@ -26,7 +26,7 @@ export function ArchivePage() {
             label="Archive"
             level="h1"
             title="往期档案"
-            intro="每一期都是一扇小窗。你可以按主题筛选，也可以从最近一期慢慢往回读。"
+            intro="每一期保留对象、编辑路径与来源出口。早期栏目制和新的策展式期型会共同构成连续的出版史。"
           />
           <div className="filter-row" aria-label="按主题筛选期刊">
             {issueTags.map((tag) => (

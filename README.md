@@ -1,130 +1,126 @@
 # 万物小窗 / wonder-window-cn
 
-《万物小窗》是一个原创中文版 newsletter / 数字珍奇柜网站。它每周打开一扇通往惊奇、自然、思想与生活智慧的窗，收集三道闪电、一张图像、一个词、一篇短文和一个问题。
+《万物小窗》是一份策展式中文通讯，也是一套面向书、图像、档案、地图、照片与声音的轻量数字出版系统。
 
-项目使用 Vite + React 构建，不包含后端、不连接外部 API、不依赖数据库。所有期刊内容都保存在本地 JS 数据文件中，适合部署为静态网站。
+当前进入 **v0.2 Editorial Architecture Migration**：从早期“固定栏目模板”迁移到由对象、阅读路径、来源与证据边界驱动的编辑模型。
 
-## 如何运行
+## 当前架构
 
-```bash
-npm install
-npm run dev
-```
+- 技术栈：Vite + React + React Router
+- 后端：无
+- 数据库：无
+- 正式订阅服务：尚未接入
+- 公开内容：只读取 publicationStatus = PUBLISHED 的 issue
+- v0.2 候选：保存在 src/data/editorialIssues.js
+- 开发预览：/editorial-preview/:slug，仅在 Vite DEV 模式注册
+- RSS / sitemap：继续只读取公开 issues 导出\n- Public consumers：Home / Archive / lead visual 已同时兼容 Legacy 与 v0.2 schema\n- Release guard：prebuild 先执行 publication contract，PUBLISHED issue 缺少必要字段时构建直接失败
+- 外部媒体：加载失败时保留显式 fallback 与原件出口，不生成替代内容冒充原件
+- 公网部署：当前未确认存在；src/siteConfig.js 中的 Vercel URL 仍是部署目标/占位配置
 
-构建生产版本：
+## v0.2 的三种期型
 
-```bash
-npm run build
-```
+- Constellation｜星座式对读：两到四件材料互相照亮。
+- Sequence｜序列式观看：从一本书、一组图或一份档案内部的排列建立观看路径。
+- Close Look｜单对象深看：一件足够复杂的对象独立成期；声音可用 Close Listen 执行。
+
+## v0.2 issue 字段
+
+- publicationStatus
+- issueType / issueTypeLabel
+- coreQuestion
+- editorialPoint
+- editorialPath
+- media
+- sections
+- sources
+- evidenceBoundary
+- closingQuestion
+
+只有 PUBLISHED 才进入公开站点。READY、ISSUE_CANDIDATE 等状态可以进入代码与本地预览，但不会自动进入公开 Archive、RSS 或 sitemap。
+
+## 当前编辑候选
+
+- 试刊03｜《读到那两首诗，蝴蝶就不只是蝴蝶了》｜READY
+- 2026-W40｜《声音还在，名字没了》｜ISSUE_CANDIDATE
+
+旧版 #001–#003 暂时作为 Legacy 保留，不在本轮强制重写。
+
+## 运行
+
+    npm install
+    npm run dev
+
+生产构建：
+
+    npm run build
 
 本地预览构建结果：
 
-```bash
-npm run preview
-```
+    npm run preview
 
-## 路由说明
+## 路由
 
-- `/`：首页
-- `/issues`：往期档案，可按标签筛选
-- `/issues/:slug`：单期期刊详情页
-- `/about`：关于页面
-- `*`：404 页面
-- `/rss.xml`：RSS feed
-- `/sitemap.xml`：sitemap
-- `/robots.txt`：robots
+公开：
 
-当前三期 slug：
+- /
+- /issues
+- /issues/:slug
+- /about
+- /rss.xml
+- /sitemap.xml
+- /robots.txt
 
-- `/issues/001-see-the-world-again`
-- `/issues/002-learn-to-wander`
-- `/issues/003-rituals-of-everyday-life`
+开发环境额外提供：
 
-## 发布前修改站点 URL
+- /editorial-preview/trial-03-utamaro-butterfly-dragonfly
+- /editorial-preview/w40-victor-7127f-voices-without-names
 
-站点基础信息位于 `src/siteConfig.js`。正式发布前请把：
+开发预览路由不会在生产环境注册。
 
-```js
-siteUrl: 'https://wonder-window-cn.vercel.app'
-```
+## 内容工作流
 
-改成你的正式域名。RSS、sitemap 和页面动态 meta 会统一读取这里的配置。
+    Source Pool
+      ↓
+    Curatorial Inbox
+      ↓
+    Object / Locator / Read Scope
+      ↓
+    Relation / Editorial Point
+      ↓
+    Evidence Boundary
+      ↓
+    Publication Gate
+      ↓
+    PUBLISHED
+      ↓
+    Archive / RSS
 
-如果修改了站点 URL 或新增内容，请重新运行：
-
-```bash
-npm run build
-```
-
-`prebuild` 会自动生成 `public/rss.xml` 和 `public/sitemap.xml`。
-
-## 如何新增一期内容
-
-所有期刊数据位于 `src/data/issues.js`。
-
-新增一期时，把新对象放到 `issues` 数组最前面。建议包含：
-
-- `id`：内部唯一 ID
-- `slug`：公开 URL 片段
-- `number`、`title`、`date`、`publishedAt`
-- `readingTime`、`tags`、`summary`
-- `visual`：本周图像类型和说明
-- `lightning`：三道闪电条目
-- `essayTitle`、`essay`
-- `word`
-- `deepDive`
-- `questions`
-
-首页会自动把 `issues[0]` 作为最新一期展示；RSS 和 sitemap 也会从同一份数据生成。
+Conan Xin Archive 负责对象、证据、来源与元数据；《万物小窗》负责选择、建立关系、提供语境并形成一期。
 
 ## RSS 与 Sitemap
 
-手动生成 RSS：
+    npm run rss
+    npm run sitemap
 
-```bash
-npm run rss
-```
+prebuild 会自动执行二者。生成脚本读取公开 issues 导出，因此未发布的 editorial candidates 不会出现在 feed 或 sitemap。
 
-手动生成 sitemap：
+## 部署
 
-```bash
-npm run sitemap
-```
+项目仍适合静态部署。
 
-生产构建前会自动执行：
+Vercel：
 
-```bash
-npm run rss && npm run sitemap
-```
+- Framework: Vite
+- Build Command: npm run build
+- Output Directory: dist
 
-## Vercel 最简部署
+Cloudflare Pages：
 
-- Framework: `Vite`
-- Build Command: `npm run build`
-- Output Directory: `dist`
+- Build command: npm run build
+- Build output directory: dist
 
-## Cloudflare Pages 最简部署
+正式发布前应确认 src/siteConfig.js 的 siteUrl 与实际公网域名一致。
 
-- Build command: `npm run build`
-- Build output directory: `dist`
+## License
 
-项目已包含 `public/_redirects`，用于支持 Cloudflare Pages 的 SPA 路由回退。
-
-## 发布后检查
-
-部署后至少打开以下路径确认返回正常：
-
-- `/`
-- `/issues`
-- `/about`
-- `/rss.xml`
-- `/sitemap.xml`
-- `/robots.txt`
-
-## 后续可以扩展的功能
-
-- 将期刊内容迁移到 Markdown 或 MDX。
-- 增加站内搜索。
-- 增加真实订阅服务，例如 Buttondown、Resend、ConvertKit 或自有后端。
-- 增加深色阅读模式。
-- 自动生成每期独立 OG 图片。
+项目代码与原创文档使用 MIT License。馆藏图像、录音及其他外部素材继续遵循各自来源页标注的权利状态；仓库中的 rightsStatus 字段用于记录编辑层的使用判断，不改变上游素材的权利状态。

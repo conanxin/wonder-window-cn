@@ -1,6 +1,13 @@
 import { Link } from 'react-router-dom'
 
 export function IssueCard({ issue, variant = 'default' }) {
+  const archiveLabel =
+    issue.schemaVersion === 2
+      ? issue.issueTypeLabel
+      : issue.word?.term
+        ? `本周一词：${issue.word.term}`
+        : issue.issueTypeLabel
+
   return (
     <Link className={`issue-card issue-card-${variant}`} to={`/issues/${issue.slug}`}>
       <span className="issue-number">{issue.number}</span>
@@ -12,9 +19,9 @@ export function IssueCard({ issue, variant = 'default' }) {
       </div>
       {variant === 'archive' ? (
         <>
-          <div className="issue-card-word">本周一词：{issue.word.term}</div>
+          {archiveLabel ? <div className="issue-card-word">{archiveLabel}</div> : null}
           <div className="tag-row" aria-label="主题标签">
-            {issue.tags.map((tag) => (
+            {(issue.tags || []).map((tag) => (
               <span className="tag" key={tag}>
                 {tag}
               </span>

@@ -1,4 +1,6 @@
-export const issues = [
+import { editorialIssues } from './editorialIssues.js'
+
+const legacyIssues = [
   {
     id: '003-ritual',
     slug: '003-rituals-of-everyday-life',
@@ -163,10 +165,29 @@ export const issues = [
   },
 ]
 
-export const issueTags = ['全部', '注意力', '自然', '城市', '仪式', '阅读', '惊奇']
+export const allIssues = [
+  ...editorialIssues,
+  ...legacyIssues.map((issue) => ({
+    ...issue,
+    publicationStatus: 'PUBLISHED',
+    schemaVersion: 1,
+    issueType: 'legacy',
+    issueTypeLabel: 'Legacy｜早期栏目制',
+  })),
+]
+
+export const issues = allIssues.filter(
+  (issue) => issue.publicationStatus === 'PUBLISHED',
+)
+
+export const issueTags = ['全部', ...new Set(issues.flatMap((issue) => issue.tags || []))]
 
 export function getIssueBySlug(slug) {
   return issues.find((issue) => issue.slug === slug)
+}
+
+export function getEditorialIssueBySlug(slug) {
+  return editorialIssues.find((issue) => issue.slug === slug)
 }
 
 export function getAdjacentIssues(slug) {

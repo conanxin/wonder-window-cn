@@ -7,10 +7,10 @@ export function Hero({ latestIssue }) {
         <div className="hero-copy">
           <h1>万物小窗</h1>
           <p className="hero-subtitle">
-            每周打开一扇通往惊奇、自然、思想与生活智慧的窗。
+            从书、图像、档案、地方与声音里，打开一扇值得停下来的窗。
           </p>
           <p className="hero-positioning">
-            这是一份写给好奇心、注意力和内在生活的中文周刊。
+            一份策展式中文通讯，也是一座持续生长的微型数字展览。
           </p>
           <div className="hero-actions">
             <Link className="button primary" to={`/issues/${latestIssue.slug}`}>
