@@ -18,6 +18,7 @@ const tamperedReviewPath = `${dir}/tampered-review.json`
 const tamperedCandidatePath = `${dir}/tampered-candidate.json`
 const futureApprovedAtPath = `${dir}/future-approved-at.json`
 const tamperedWarningsPath = `${dir}/tampered-warnings.json`
+const reintroducedSourceContextPath = `${dir}/reintroduced-source-context.json`
 
 await mkdir(dir, { recursive: true })
 
@@ -303,8 +304,21 @@ if (runVerifier(tamperedWarningsPath).status === 0) {
   )
 }
 
+const reintroducedSourceContext = structuredClone(approved)
+reintroducedSourceContext.sourceContext = {
+  gitCommit: 'definitely-not-the-source-commit',
+}
+await writeFile(
+  reintroducedSourceContextPath,
+  JSON.stringify(reintroducedSourceContext, null, 2),
+)
+
+if (runVerifier(reintroducedSourceContextPath).status === 0) {
+  throw new Error('Reintroduced sourceContext provenance must fail verification')
+}
+
 await rm(dir, { recursive: true, force: true })
 
 console.log(
-  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, impossible/future approval timestamps, proposal fingerprint, public issue set, tampered review packet, candidate display fields, and external verification warnings rejected',
+  'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, impossible/future approval timestamps, proposal fingerprint, public issue set, tampered review packet, candidate display fields, external verification warnings, and reintroduced source provenance rejected',
 )
