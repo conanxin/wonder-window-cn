@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile, symlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 
 const dir = 'tmp-publication-patch-preview-test'
@@ -154,6 +155,30 @@ if (
   preview.blockers.length !== 2
 ) {
   throw new Error('External verification blockers must remain explicit')
+}
+
+const sha256 = (value) =>
+  createHash('sha256').update(value).digest('hex')
+
+const candidateTarget = preview.targetFiles.find(
+  (item) => item.path === candidateFile,
+)
+const publishedTarget = preview.targetFiles.find(
+  (item) => item.path === publishedFile,
+)
+
+if (
+  candidateTarget?.sha256Before !== sha256(candidateBefore) ||
+  publishedTarget?.sha256Before !== sha256(publishedBefore)
+) {
+  throw new Error('Target file hashes must bind to the exact registry bytes read by the test')
+}
+
+if (
+  preview.verificationContext?.issuesFile?.publicIssuesFingerprintSha256 !==
+  preview.approvedManifestVerification.publicIssuesFingerprintSha256
+) {
+  throw new Error('Preview public issue context must match P12 verification')
 }
 
 const [candidateAfter, publishedAfter] = await Promise.all([
