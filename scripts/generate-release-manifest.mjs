@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { editorialCandidates } from '../src/data/editorialCandidates.js'
 import { issues } from '../src/data/issues.js'
 import { absoluteUrl } from '../src/siteConfig.js'
@@ -41,6 +42,12 @@ function runRehearsal(slug, publishedAt) {
   return rehearsal.stdout.trim()
 }
 
+function candidateFingerprint(candidate) {
+  return createHash('sha256')
+    .update(JSON.stringify(candidate))
+    .digest('hex')
+}
+
 function buildManifest(candidate, publishedAt, rehearsalOutput) {
   const projectedIssues = [
     ...issues,
@@ -76,6 +83,15 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
       issueType: candidate.issueType,
       issueTypeLabel: candidate.issueTypeLabel,
       notionUrl: candidate.notionUrl || null,
+      contentFingerprintSha256: candidateFingerprint(candidate),
+    },
+    decision: {
+      requiresExplicitApproval: true,
+      approvalStatus: 'PENDING',
+      approvedBy: null,
+    },
+    sourceContext: {
+      gitCommit: process.env.GITHUB_SHA || null,
     },
     proposedPublication: {
       publicationStatus: 'PUBLISHED',
