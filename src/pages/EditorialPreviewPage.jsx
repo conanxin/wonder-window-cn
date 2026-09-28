@@ -1,12 +1,12 @@
 import { Link, useParams } from 'react-router-dom'
 import { IssueDetail } from '../components/IssueDetail.jsx'
 import { Seo } from '../components/Seo.jsx'
-import { getEditorialIssueBySlug } from '../data/issues.js'
+import { getEditorialCandidateBySlug } from '../data/editorialCandidates.js'
 import { NotFoundPage } from './NotFoundPage.jsx'
 
-export function EditorialPreviewPage() {
+export default function EditorialPreviewPage() {
   const { slug } = useParams()
-  const issue = getEditorialIssueBySlug(slug)
+  const issue = getEditorialCandidateBySlug(slug)
 
   if (!issue) {
     return <NotFoundPage />
@@ -23,7 +23,10 @@ export function EditorialPreviewPage() {
         <div className="container">
           <div className="preview-banner">
             <strong>编辑预览｜{issue.publicationStatus}</strong>
-            <span>仅在 Vite DEV 模式开放；不会进入生产路由、RSS 或 sitemap。</span>
+            <span>
+              当前仅在本地开发或 Vercel Preview 环境启用；Production 不注册此路由，也不打包候选正文。
+            </span>
+            <span>环境：{import.meta.env.DEPLOYMENT_ENV}</span>
             {issue.notionUrl ? (
               <a href={issue.notionUrl} rel="noreferrer" target="_blank">
                 查看 Notion 研究记录
