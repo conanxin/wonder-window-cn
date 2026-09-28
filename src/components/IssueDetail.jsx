@@ -1,89 +1,128 @@
-import { WonderVisual } from './WonderVisual.jsx'
+import { LegacyIssueDetail } from './LegacyIssueDetail.jsx'
 
-export function IssueDetail({ issue }) {
+function EditorialMedia({ media }) {
+  if (media.kind === 'audio') {
+    return (
+      <figure className="editorial-media editorial-media-audio">
+        <audio controls preload="metadata" src={media.src}>
+          你的浏览器不支持音频播放。可以直接打开来源链接。
+        </audio>
+        <figcaption>
+          <span>{media.caption}</span>
+          <a href={media.sourceUrl} rel="noreferrer" target="_blank">
+            回到原件
+          </a>
+          <span className="rights-chip">{media.rightsStatus}</span>
+        </figcaption>
+      </figure>
+    )
+  }
+
   return (
-    <article className="issue-detail">
-      <header className="issue-detail-header">
+    <figure className="editorial-media">
+      <a href={media.sourceUrl} rel="noreferrer" target="_blank">
+        <img alt={media.alt} loading="lazy" src={media.src} />
+      </a>
+      <figcaption>
+        <span>{media.caption}</span>
+        <a href={media.sourceUrl} rel="noreferrer" target="_blank">
+          回到原件
+        </a>
+        <span className="rights-chip">{media.rightsStatus}</span>
+      </figcaption>
+    </figure>
+  )
+}
+
+function EditorialIssueDetail({ issue }) {
+  return (
+    <article className="issue-detail editorial-issue">
+      <header className="issue-detail-header editorial-header">
         <div>
-          <span className="issue-number">{issue.number}</span>
+          <div className="editorial-kickers">
+            <span className="issue-number">{issue.number}</span>
+            <span className="issue-type-chip">{issue.issueTypeLabel}</span>
+            {issue.publicationStatus !== 'PUBLISHED' ? (
+              <span className="status-chip">{issue.publicationStatus}</span>
+            ) : null}
+          </div>
           <h1>{issue.title}</h1>
           <div className="detail-meta">
             <span>{issue.date}</span>
             <span>{issue.readingTime}</span>
           </div>
         </div>
-        <p>{issue.summary}</p>
+        <div>
+          <p>{issue.summary}</p>
+          <p className="core-question">{issue.coreQuestion}</p>
+        </div>
       </header>
 
-      <section className="detail-block">
-        <div className="block-heading">
-          <span>01</span>
-          <h2>三道闪电</h2>
-        </div>
-        <div className="lightning-grid">
-          {issue.lightning.map((item) => (
-            <article className="lightning-card" key={item.title}>
-              <span>{item.type}</span>
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="detail-block visual-block">
-        <div className="block-heading">
-          <span>02</span>
-          <h2>本周图像</h2>
-        </div>
-        <WonderVisual issue={issue} />
-        <p className="visual-caption">{issue.visual.caption}</p>
-      </section>
-
-      <section className="detail-block essay-block">
-        <div className="block-heading">
-          <span>03</span>
-          <h2>本周短文</h2>
-        </div>
-        <h3>{issue.essayTitle}</h3>
-        {issue.essay.split('\n\n').map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
+      <section className="editorial-path" aria-label="本期观看路径">
+        {issue.editorialPath.map((step, index) => (
+          <span key={step}>
+            <b>{String(index + 1).padStart(2, '0')}</b>
+            {step}
+          </span>
         ))}
       </section>
 
-      <section className="detail-split">
-        <div className="detail-block word-block">
-          <div className="block-heading">
-            <span>04</span>
-            <h2>本周一词</h2>
-          </div>
-          <h3>{issue.word.term}</h3>
-          <p className="muted">{issue.word.origin}</p>
-          <p>{issue.word.meaning}</p>
-          <p>{issue.word.practice}</p>
-        </div>
+      {issue.media.map((media) => (
+        <EditorialMedia key={media.kind + '-' + media.sourceUrl} media={media} />
+      ))}
 
-        <div className="detail-block dive-block">
+      {issue.sections.map((section, index) => (
+        <section className="detail-block editorial-section" key={section.title}>
           <div className="block-heading">
-            <span>05</span>
-            <h2>本周深潜</h2>
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <h2>{section.title}</h2>
           </div>
-          <h3>{issue.deepDive.title}</h3>
-          <p>{issue.deepDive.text}</p>
+          {section.quote ? <blockquote>{section.quote}</blockquote> : null}
+          {section.paragraphs.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </section>
+      ))}
+
+      <section className="detail-block evidence-block">
+        <div className="block-heading">
+          <span>↳</span>
+          <h2>证据边界</h2>
+        </div>
+        <ul>
+          {issue.evidenceBoundary.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="detail-block source-block">
+        <div className="block-heading">
+          <span>↗</span>
+          <h2>来源出口</h2>
+        </div>
+        <div className="source-list">
+          {issue.sources.map((source) => (
+            <a href={source.url} key={source.url} rel="noreferrer" target="_blank">
+              <strong>{source.title}</strong>
+              <span>{source.role}</span>
+            </a>
+          ))}
         </div>
       </section>
 
-      <section className="detail-block question-block">
-        <div className="block-heading">
-          <span>06</span>
-          <h2>带走一个问题</h2>
-        </div>
-        <ol>
-          {issue.questions.map((question) => (
-            <li key={question}>{question}</li>
-          ))}
-        </ol>
+      <section className="detail-block closing-question">
+        <span>带走一个问题</span>
+        <p>{issue.closingQuestion}</p>
       </section>
     </article>
   )
+}
+
+export function IssueDetail({ issue }) {
+  if (issue.schemaVersion !== 2) {
+    return <LegacyIssueDetail issue={issue} />
+  }
+
+  return <EditorialIssueDetail issue={issue} />
 }
