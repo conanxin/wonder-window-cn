@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { editorialCandidates } from '../src/data/editorialCandidates.js'
 import { validateIssue } from './publication-contract.mjs'
+import { withTrial03ReadyFixture } from './test-trial03-ready-fixture.mjs'
 
 function run(args) {
   return spawnSync(process.execPath, ['scripts/rehearse-release.mjs', ...args], {
@@ -8,16 +9,27 @@ function run(args) {
   })
 }
 
-const ready = run([
-  'trial-03-utamaro-butterfly-dragonfly',
-  '2099-12-31',
-])
+await withTrial03ReadyFixture(async () => {
+  const ready = run([
+    'trial-03-utamaro-butterfly-dragonfly',
+    '2099-12-31',
+  ])
 
-if (ready.status !== 0) {
-  throw new Error(
-    `READY candidate should rehearse successfully:\n${ready.stderr || ready.stdout}`,
-  )
-}
+  if (ready.status !== 0) {
+    throw new Error(
+      `READY candidate should rehearse successfully:\n${ready.stderr || ready.stdout}`,
+    )
+  }
+
+  const invalidDate = run([
+    'trial-03-utamaro-butterfly-dragonfly',
+    '2099-02-31',
+  ])
+
+  if (invalidDate.status === 0) {
+    throw new Error('Invalid calendar date must not pass release rehearsal')
+  }
+})
 
 const notReady = run([
   'w40-victor-7127f-voices-without-names',
@@ -26,15 +38,6 @@ const notReady = run([
 
 if (notReady.status === 0) {
   throw new Error('ISSUE_CANDIDATE must not pass release rehearsal')
-}
-
-const invalidDate = run([
-  'trial-03-utamaro-butterfly-dragonfly',
-  '2099-02-31',
-])
-
-if (invalidDate.status === 0) {
-  throw new Error('Invalid calendar date must not pass release rehearsal')
 }
 
 const unsafeSlug = {
