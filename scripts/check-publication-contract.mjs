@@ -1,56 +1,20 @@
 import { allIssues } from '../src/data/issues.js'
+import { validateIssue } from './publication-contract.mjs'
 
-const errors = []
+const publishedIssues = allIssues.filter(
+  (issue) => issue.publicationStatus === 'PUBLISHED',
+)
 
-function requireString(issue, field) {
-  if (typeof issue[field] !== 'string' || !issue[field].trim()) {
-    errors.push(`${issue.slug || issue.id}: missing ${field}`)
+const errors = publishedIssues.flatMap((issue) =>
+  validateIssue(issue, { requirePublishedAt: true }),
+)
+
+const seenSlugs = new Set()
+for (const issue of publishedIssues) {
+  if (seenSlugs.has(issue.slug)) {
+    errors.push(`${issue.slug}: duplicate published slug`)
   }
-}
-
-function requireArray(issue, field, { allowEmpty = false } = {}) {
-  if (!Array.isArray(issue[field]) || (!allowEmpty && issue[field].length === 0)) {
-    errors.push(`${issue.slug || issue.id}: invalid ${field}`)
-  }
-}
-
-for (const issue of allIssues) {
-  if (issue.publicationStatus !== 'PUBLISHED') {
-    continue
-  }
-
-  for (const field of ['id', 'slug', 'number', 'title', 'date', 'summary', 'publishedAt']) {
-    requireString(issue, field)
-  }
-
-  requireArray(issue, 'tags', { allowEmpty: true })
-
-  if (issue.schemaVersion === 2) {
-    for (const field of [
-      'issueType',
-      'issueTypeLabel',
-      'coreQuestion',
-      'editorialPoint',
-      'closingQuestion',
-    ]) {
-      requireString(issue, field)
-    }
-
-    requireArray(issue, 'editorialPath')
-    requireArray(issue, 'sections')
-    requireArray(issue, 'sources')
-    requireArray(issue, 'evidenceBoundary', { allowEmpty: true })
-    requireArray(issue, 'media', { allowEmpty: true })
-  }
-
-  if (issue.schemaVersion === 1) {
-    if (!issue.visual?.variant) {
-      errors.push(`${issue.slug}: legacy issue missing visual.variant`)
-    }
-    if (!issue.word?.term) {
-      errors.push(`${issue.slug}: legacy issue missing word.term`)
-    }
-  }
+  seenSlugs.add(issue.slug)
 }
 
 if (errors.length) {
@@ -58,5 +22,5 @@ if (errors.length) {
 }
 
 console.log(
-  `Publication contract OK: ${allIssues.filter((issue) => issue.publicationStatus === 'PUBLISHED').length} published issues`,
+  `Publication contract OK: ${publishedIssues.length} published issues`,
 )
