@@ -141,6 +141,16 @@ function verifyManifest(manifest) {
   }
 
   const manifestReviewSnapshot = {
+    candidate: {
+      id: manifest.candidate.id,
+      slug: manifest.candidate.slug,
+      title: manifest.candidate.title,
+      currentStatus: manifest.candidate.currentStatus,
+      schemaVersion: manifest.candidate.schemaVersion,
+      issueType: manifest.candidate.issueType,
+      issueTypeLabel: manifest.candidate.issueTypeLabel,
+      notionUrl: manifest.candidate.notionUrl,
+    },
     editorial: manifest.editorial,
     evidenceBoundary: manifest.evidenceBoundary,
     media: manifest.media,
