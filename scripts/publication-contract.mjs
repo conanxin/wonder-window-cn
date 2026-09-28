@@ -51,6 +51,16 @@ export function validateIssue(issue, { requirePublishedAt = false } = {}) {
 
   requireArray(errors, issue, 'tags', { allowEmpty: true })
 
+  if (
+    typeof issue.slug === 'string' &&
+    issue.slug.trim() &&
+    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(issue.slug)
+  ) {
+    errors.push(
+      `${issueLabel(issue)}: slug must use lowercase URL-safe kebab-case`,
+    )
+  }
+
   if (!SUPPORTED_SCHEMA_VERSIONS.has(issue.schemaVersion)) {
     errors.push(
       `${issueLabel(issue)}: unsupported schemaVersion ${String(issue.schemaVersion)}`,
