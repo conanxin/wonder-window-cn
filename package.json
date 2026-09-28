@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "check:publication": "node scripts/check-publication-contract.mjs",
+    "check:release": "node scripts/check-release-candidate.mjs",
     "check:bundle-privacy": "node scripts/check-bundle-privacy.mjs",
     "rss": "node scripts/generate-rss.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
