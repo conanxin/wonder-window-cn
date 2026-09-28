@@ -7,6 +7,7 @@ import { SubscribeBox } from '../components/SubscribeBox.jsx'
 import { WonderVisual } from '../components/WonderVisual.jsx'
 import { issueTypeDefinitions } from '../data/issueTypes.js'
 import { issues } from '../data/issues.js'
+import { getIssueDisplayDate } from '../data/issueDisplay.js'
 
 const latestIssue = issues[0]
 
@@ -28,7 +29,7 @@ export function HomePage() {
               intro={latestIssue.summary}
             />
             <div className="feature-meta">
-              <span>{latestIssue.date}</span>
+              <span>{getIssueDisplayDate(latestIssue)}</span>
               <span>{latestIssue.readingTime}</span>
               {latestIssue.schemaVersion === 2 ? (
                 <span>{latestIssue.issueTypeLabel}</span>

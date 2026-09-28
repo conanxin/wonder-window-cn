@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { getIssueDisplayDate } from '../data/issueDisplay.js'
 
 export function IssueCard({ issue, variant = 'default' }) {
   const archiveLabel =
@@ -14,7 +15,7 @@ export function IssueCard({ issue, variant = 'default' }) {
       <h3>{issue.title}</h3>
       <p>{issue.summary}</p>
       <div className="issue-card-meta">
-        <span>{issue.date}</span>
+        <span>{getIssueDisplayDate(issue)}</span>
         <span>{issue.readingTime}</span>
       </div>
       {variant === 'archive' ? (
