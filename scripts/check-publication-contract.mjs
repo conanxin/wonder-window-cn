@@ -67,5 +67,5 @@ if (errors.length) {
 }
 
 console.log(
-  `Publication contract OK: ${issues.length} public issues, ${editorialCandidates.length} private editorial candidates`,
+  `Publication contract OK: ${issues.length} public issues, ${editorialCandidates.length} unpublished editorial candidates`,
 )
