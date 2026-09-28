@@ -1,5 +1,9 @@
 import { readFile } from 'node:fs/promises'
-import { createHash } from 'node:crypto'
+import {
+  buildProposalSnapshot,
+  candidateFingerprint,
+  proposalFingerprint,
+} from './release-manifest-fingerprint.mjs'
 import { spawnSync } from 'node:child_process'
 import { editorialCandidates } from '../src/data/editorialCandidates.js'
 import { issues } from '../src/data/issues.js'
@@ -14,12 +18,6 @@ function requireString(value, label) {
   if (typeof value !== 'string' || !value.trim()) {
     fail(`Approved manifest missing ${label}`)
   }
-}
-
-function fingerprint(candidate) {
-  return createHash('sha256')
-    .update(JSON.stringify(candidate))
-    .digest('hex')
 }
 
 function requireApprovedDecision(manifest) {
@@ -119,23 +117,10 @@ function verifyManifest(manifest) {
     }
   }
 
-  const currentFingerprint = fingerprint(candidate)
+  const currentFingerprint = candidateFingerprint(candidate)
   if (manifest.candidate.contentFingerprintSha256 !== currentFingerprint) {
     fail(
       `${candidate.slug}: approved manifest fingerprint does not match current candidate`,
-    )
-  }
-
-  const approvedProposal = manifest.decision.approvedProposal
-  if (
-    approvedProposal.contentFingerprintSha256 !== currentFingerprint ||
-    approvedProposal.publishedAt !==
-      manifest.proposedPublication?.publishedAt ||
-    approvedProposal.canonicalUrl !==
-      manifest.proposedPublication?.canonicalUrl
-  ) {
-    fail(
-      `${candidate.slug}: approved proposal snapshot does not match current manifest proposal`,
     )
   }
 
@@ -225,6 +210,45 @@ function verifyManifest(manifest) {
     fail(`${candidate.slug}: migration plan is incomplete or stale`)
   }
 
+  const currentProposalSnapshot = buildProposalSnapshot({
+    candidateFingerprintSha256: currentFingerprint,
+    proposedPublication: {
+      publicationStatus: 'PUBLISHED',
+      publishedAt,
+      canonicalUrl,
+      projectedArchivePosition,
+      publicIssueCountBefore: issues.length,
+      publicIssueCountAfter: issues.length + 1,
+    },
+    syndication: {
+      rssPubDate,
+      sitemapLastmod: publishedAt,
+    },
+    migrationPlan: plan,
+  })
+  const currentProposalFingerprint = proposalFingerprint(
+    currentProposalSnapshot,
+  )
+
+  if (manifest.proposalFingerprintSha256 !== currentProposalFingerprint) {
+    fail(
+      `${candidate.slug}: manifest proposal fingerprint is stale; regenerate manifest`,
+    )
+  }
+
+  const approvedProposal = manifest.decision.approvedProposal
+  if (
+    approvedProposal.contentFingerprintSha256 !== currentFingerprint ||
+    approvedProposal.publishedAt !== publishedAt ||
+    approvedProposal.canonicalUrl !== canonicalUrl ||
+    approvedProposal.proposalFingerprintSha256 !==
+      currentProposalFingerprint
+  ) {
+    fail(
+      `${candidate.slug}: approved proposal snapshot does not match current proposal`,
+    )
+  }
+
   return {
     status: 'PROMOTION_PLAN_VERIFIED',
     slug: candidate.slug,
@@ -235,6 +259,7 @@ function verifyManifest(manifest) {
     publishedAt,
     canonicalUrl,
     projectedArchivePosition,
+    proposalFingerprintSha256: currentProposalFingerprint,
     mutatesRepository: false,
   }
 }
