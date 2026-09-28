@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      - feat/editorial-architecture-v0.2
+      - feat/release-candidate-preview-gate
 
 jobs:
   build:
@@ -20,5 +20,9 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci
-      - name: Build
+      - name: Build production and verify candidate privacy
+        run: npm run build
+      - name: Build editorial preview and verify candidate inclusion
+        env:
+          VITE_EDITORIAL_PREVIEW: 'true'
         run: npm run build
