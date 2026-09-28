@@ -89,6 +89,8 @@ function buildManifest(candidate, publishedAt, rehearsalOutput) {
       requiresExplicitApproval: true,
       approvalStatus: 'PENDING',
       approvedBy: null,
+      approvedAt: null,
+      approvedProposal: null,
     },
     sourceContext: {
       gitCommit: process.env.GITHUB_SHA || null,
