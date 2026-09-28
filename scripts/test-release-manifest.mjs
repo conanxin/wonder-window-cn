@@ -29,6 +29,15 @@ if (manifest.mutatesRepository !== false || manifest.sendsNewsletter !== false) 
 if (manifest.candidate.currentStatus !== 'READY') {
   throw new Error('Manifest candidate must be READY')
 }
+if (!/^[a-f0-9]{64}$/.test(manifest.candidate.contentFingerprintSha256)) {
+  throw new Error('Manifest must bind to an exact candidate SHA-256 fingerprint')
+}
+if (
+  manifest.decision?.requiresExplicitApproval !== true ||
+  manifest.decision?.approvalStatus !== 'PENDING'
+) {
+  throw new Error('Manifest must preserve an explicit pending publication decision')
+}
 if (manifest.proposedPublication.publicationStatus !== 'PUBLISHED') {
   throw new Error('Manifest must describe the proposed PUBLISHED state')
 }
