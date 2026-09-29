@@ -100,17 +100,60 @@ export async function withTrial03ReadyFixture(callback) {
     publishedBefore.slice(0, publishedObject.start) +
     publishedBefore.slice(publishedObject.end)
 
+  let callbackResult
+  let callbackError = null
+  let driftError = null
+
   try {
     await Promise.all([
       writeFile(CANDIDATE_FILE, candidateFixture, 'utf8'),
       writeFile(PUBLISHED_FILE, publishedFixture, 'utf8'),
     ])
 
-    return await callback()
+    try {
+      callbackResult = await callback()
+    } catch (error) {
+      callbackError = error
+    }
+
+    try {
+      const [candidateAfter, publishedAfter] = await Promise.all([
+        readFile(CANDIDATE_FILE, 'utf8'),
+        readFile(PUBLISHED_FILE, 'utf8'),
+      ])
+
+      if (
+        candidateAfter !== candidateFixture ||
+        publishedAfter !== publishedFixture
+      ) {
+        driftError = new Error(
+          'Test callback mutated publication registries while READY fixture was active',
+        )
+      }
+    } catch (error) {
+      driftError = error
+    }
   } finally {
     await Promise.all([
       writeFile(CANDIDATE_FILE, candidateBefore, 'utf8'),
       writeFile(PUBLISHED_FILE, publishedBefore, 'utf8'),
     ])
   }
+
+  if (callbackError && driftError) {
+    throw new AggregateError(
+      [callbackError, driftError],
+      'READY fixture callback failed and also mutated publication registries',
+    )
+  }
+
+  if (callbackError) {
+    throw callbackError
+  }
+
+  if (driftError) {
+    throw driftError
+  }
+
+  return callbackResult
 }
