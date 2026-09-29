@@ -2,6 +2,7 @@ import { mkdir, readFile, rm, writeFile, symlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
+import { withTrial03ReadyFixture } from './test-trial03-ready-fixture.mjs'
 
 const dir = 'tmp-publication-patch-preview-test'
 const pendingPath = `${dir}/pending.json`
@@ -11,6 +12,8 @@ const previewPath = `${outputDir}/contract-preview.json`
 const symlinkPreviewPath = `${outputDir}/registry-link.json`
 
 await mkdir(dir, { recursive: true })
+
+await withTrial03ReadyFixture(async () => {
 await rm(outputDir, { recursive: true, force: true })
 
 const candidateFile = 'src/data/editorialCandidates.js'
@@ -196,3 +199,4 @@ await rm(outputDir, { recursive: true, force: true })
 console.log(
   'Publication patch preview contract PASS: PENDING rejected; approved manifest uses one verified snapshot; registry and symlink outputs are rejected; two-operation preview preserves external blockers without source mutation',
 )
+})

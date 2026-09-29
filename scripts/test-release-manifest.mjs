@@ -1,7 +1,9 @@
 import { readFile, rm } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
+import { withTrial03ReadyFixture } from './test-trial03-ready-fixture.mjs'
 
 const output = 'tmp-release-manifest/trial-03.json'
+await withTrial03ReadyFixture(async () => {
 const run = spawnSync(
   process.execPath,
   [
@@ -94,3 +96,4 @@ if (blocked.status === 0) {
 
 await rm('tmp-release-manifest', { recursive: true, force: true })
 console.log('Release decision manifest contract PASS')
+})

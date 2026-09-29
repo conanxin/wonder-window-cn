@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
+import { withTrial03ReadyFixture } from './test-trial03-ready-fixture.mjs'
 import {
   buildProposalSnapshot,
   proposalFingerprint,
@@ -30,6 +31,7 @@ function runVerifier(path) {
   )
 }
 
+await withTrial03ReadyFixture(async () => {
 const generated = spawnSync(
   process.execPath,
   [
@@ -322,3 +324,4 @@ await rm(dir, { recursive: true, force: true })
 console.log(
   'Approved manifest verification contract PASS: PENDING rejected; approved current manifest accepted; stale fingerprint, URL, impossible/future approval timestamps, proposal fingerprint, public issue set, tampered review packet, candidate display fields, external verification warnings, and reintroduced source provenance rejected',
 )
+})
