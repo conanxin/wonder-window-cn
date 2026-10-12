@@ -1,4 +1,7 @@
+import { w42DuckMarket } from './w42DuckMarket.js'
+
 export const editorialCandidates = [
+  w42DuckMarket,
   {
     id: 'trial-03-utamaro',
     slug: 'trial-03-utamaro-butterfly-dragonfly',
