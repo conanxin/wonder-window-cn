@@ -1,0 +1,104 @@
+name: W42 Preview Viewport QA
+on:
+  push:
+    branches: [review/w42-duck-market-preview]
+permissions:
+  contents: read
+jobs:
+  viewport-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install browser
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local Vite preview
+        run: |
+          VITE_EDITORIAL_PREVIEW=true npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/w42-vite.log 2>&1 &
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/w42-vite.log
+          exit 1
+      - name: Test 320 390 1440 CSS px and capture full-page screenshots
+        run: |
+          node --input-type=module <<'JS'
+          import { chromium } from 'playwright'
+          import { mkdir, writeFile } from 'node:fs/promises'
+          await mkdir('w42-viewport-qa', { recursive: true })
+          const browser = await chromium.launch({ headless: true })
+          const results = []
+          const target = 'http://127.0.0.1:4173/editorial-preview/w42-afong-duck-market'
+          try {
+            for (const width of [320, 390, 1440]) {
+              const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 })
+              const errors = []
+              page.on('pageerror', e => errors.push(String(e)))
+              const response = await page.goto(target, { waitUntil: 'networkidle', timeout: 45000 })
+              await page.locator('.editorial-media img').waitFor()
+              await page.waitForFunction(() => {
+                const img = document.querySelector('.editorial-media img')
+                return !!img && img.complete && img.naturalWidth > 0
+              })
+              const metrics = await page.evaluate(() => {
+                const img = document.querySelector('.editorial-media img')
+                const box = img.getBoundingClientRect()
+                return {
+                  viewportCssPx: window.innerWidth,
+                  documentScrollWidth: document.documentElement.scrollWidth,
+                  imgNaturalSize: [img.naturalWidth, img.naturalHeight],
+                  imgRenderedSize: [Math.round(box.width), Math.round(box.height)],
+                  imgObjectFit: getComputedStyle(img).objectFit,
+                  imgSource: new URL(img.currentSrc).pathname,
+                  title: document.querySelector('.editorial-header h1')?.textContent || '',
+                  visibleCandidateStatus: document.querySelector('.status-chip')?.textContent || '',
+                  previewBanner: document.querySelector('.preview-banner')?.textContent || '',
+                  pathSteps: document.querySelectorAll('.editorial-path > span').length,
+                  sections: document.querySelectorAll('.editorial-section').length,
+                  sources: document.querySelectorAll('.source-list a').length,
+                  evidenceItems: document.querySelectorAll('.evidence-block li').length,
+                  hasClosingQuestion: !!document.querySelector('.closing-question p'),
+                  pageHeight: Math.ceil(document.documentElement.scrollHeight),
+                }
+              })
+              const checks = {
+                http200: response?.status() === 200,
+                noPageErrors: errors.length === 0,
+                noHorizontalOverflow: metrics.documentScrollWidth <= width + 1,
+                imageLoaded: metrics.imgNaturalSize[0] === 3787 && metrics.imgNaturalSize[1] === 2764,
+                uncropped: metrics.imgObjectFit === 'contain',
+                correctStaticImage: metrics.imgSource === '/images/w42-duck-market-met-2005.100.494.37.jpg',
+                correctTitle: metrics.title.includes('一张鸭市照'),
+                unpublishedState: metrics.visibleCandidateStatus.includes('ISSUE_CANDIDATE') && metrics.previewBanner.includes('编辑预览'),
+                path4: metrics.pathSteps === 4,
+                sections5: metrics.sections === 5,
+                sources3: metrics.sources === 3,
+                evidence5: metrics.evidenceItems === 5,
+                closingQuestion: metrics.hasClosingQuestion,
+              }
+              await page.screenshot({ path: 'w42-viewport-qa/w42-' + width + 'px.png', fullPage: true })
+              const result = { width, checks, metrics, errors, pass: Object.values(checks).every(Boolean) }
+              results.push(result)
+              console.log('W42 viewport ' + width + ': ' + (result.pass ? 'PASS' : 'FAIL'))
+              await page.close()
+            }
+            const report = { testedCommit: process.env.GITHUB_SHA, testMode: 'local Vite preview from exact PR branch (not Vercel hosted browser)', results, pass: results.every(x => x.pass) }
+            await writeFile('w42-viewport-qa/results.json', JSON.stringify(report, null, 2) + '\n')
+            if (!report.pass) process.exitCode = 1
+          } finally {
+            await browser.close()
+          }
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: w42-viewport-qa-${{ github.sha }}
+          path: w42-viewport-qa/
+          if-no-files-found: warn
