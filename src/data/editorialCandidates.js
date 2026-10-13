@@ -14,7 +14,7 @@ export const editorialCandidates = [
       "公版"
     ],
     "summary": "一张十九世纪的鸭市照片，为什么让我们的视线先越过市场、停在山水之间？",
-    "publicationStatus": "ISSUE_CANDIDATE",
+    "publicationStatus": "READY",
     "schemaVersion": 2,
     "issueType": "close-look",
     "issueTypeLabel": "Close Look｜单对象深看",
