@@ -76,7 +76,7 @@ jobs:
                 uncropped: metrics.imgObjectFit === 'contain',
                 correctStaticImage: metrics.imgSource === '/images/w42-duck-market-met-2005.100.494.37.jpg',
                 correctTitle: metrics.title.includes('一张鸭市照'),
-                unpublishedState: metrics.visibleCandidateStatus.includes('ISSUE_CANDIDATE') && metrics.previewBanner.includes('编辑预览'),
+                unpublishedState: metrics.visibleCandidateStatus.trim() === 'READY' && metrics.previewBanner.includes('编辑预览'),
                 path4: metrics.pathSteps === 4,
                 sections5: metrics.sections === 5,
                 sources3: metrics.sources === 3,
